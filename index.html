@@ -2,9 +2,8 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="description" content="Erkennt automatisch, wenn eine Fuhre vom Feld zur Lagerstätte fährt.">
-<meta name="theme-color" content="#1b1712">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0b0d10">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,180 +14,195 @@
 <title>Fuhren-Tracker</title>
 <style>
   :root{
-    --soil:#1b1712;
-    --soil-2:#241f18;
-    --straw:#d9a441;
-    --straw-dim:#8a6a2c;
-    --field:#5c7a3a;
-    --field-dim:#3a4d27;
-    --cream:#f3ead9;
-    --cream-dim:#a89c86;
-    --rust:#b5482f;
-    --amber:#d98c2b;
-    --line:#3a3226;
+    --bg:#0b0d10;
+    --tile:#16191d;
+    --tile-2:#1e2227;
+    --line:#2a2e34;
+    --text:#f2f3f5;
+    --dim:#8a8f98;
+    --green:#30d158;
+    --green-dim:#1f5c33;
+    --blue:#0a84ff;
+    --blue-dim:#12395e;
+    --orange:#ff9f0a;
+    --red:#ff453a;
+    --red-dim:#5c211d;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;background:var(--soil);color:var(--cream);
-    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;
-    overscroll-behavior:none;-webkit-user-select:none;user-select:none;}
-  body{padding:calc(18px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+    min-height:100vh;overscroll-behavior:none;}
+  body{padding:16px 14px 50px;}
+  button{font-family:inherit;cursor:pointer;border:none;}
 
-  .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--straw);font-weight:700;}
-  h1{font-family:Georgia,'Times New Roman',serif;font-size:28px;margin:2px 0 2px;font-weight:700;letter-spacing:.01em;}
-  .sub{font-size:13px;color:var(--cream-dim);margin-bottom:18px;}
+  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:2px;}
+  h1{font-size:26px;margin:0 0 14px;font-weight:800;letter-spacing:-.01em;}
 
-  .card{background:var(--soil-2);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;}
+  .tile{background:var(--tile);border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:12px;}
+  .tile-row{display:flex;gap:12px;}
+  .tile-row .tile{flex:1;margin-bottom:0;}
 
-  .status-row{display:flex;align-items:center;gap:12px;}
-  .dot{width:14px;height:14px;border-radius:50%;background:var(--cream-dim);flex-shrink:0;}
-  .dot.live{background:var(--field);box-shadow:0 0 0 0 rgba(92,122,58,.6);animation:pulse-field 2s infinite;}
-  .dot.off{background:var(--rust);}
-  .dot.warn{background:var(--amber);box-shadow:0 0 0 0 rgba(217,140,43,.6);animation:pulse-amber 2s infinite;}
-  @keyframes pulse-field{
-    0%{box-shadow:0 0 0 0 rgba(92,122,58,.55);}
-    70%{box-shadow:0 0 0 10px rgba(92,122,58,0);}
-    100%{box-shadow:0 0 0 0 rgba(92,122,58,0);}
-  }
-  @keyframes pulse-amber{
-    0%{box-shadow:0 0 0 0 rgba(217,140,43,.55);}
-    70%{box-shadow:0 0 0 10px rgba(217,140,43,0);}
-    100%{box-shadow:0 0 0 0 rgba(217,140,43,0);}
-  }
-  .zone-label{font-family:Georgia,serif;font-size:20px;font-weight:700;}
-  .zone-sub{font-size:13px;color:var(--cream-dim);margin-top:2px;}
-  .zone-sub.error{color:var(--rust);font-weight:600;}
-  .gps-meta{font-size:12px;color:var(--cream-dim);margin-top:10px;border-top:1px solid var(--line);padding-top:10px;
-    display:flex;justify-content:space-between;gap:8px;}
-  .gps-meta .weak{color:var(--amber);font-weight:700;}
+  .status-tile{display:flex;align-items:center;gap:12px;}
+  .status-dot{width:12px;height:12px;border-radius:50%;background:var(--dim);flex-shrink:0;}
+  .status-dot.live{background:var(--green);box-shadow:0 0 0 0 rgba(48,209,88,.6);animation:pulse 2s infinite;}
+  .status-dot.off{background:var(--red);}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(48,209,88,.5);}70%{box-shadow:0 0 0 9px rgba(48,209,88,0);}100%{box-shadow:0 0 0 0 rgba(48,209,88,0);}}
+  .status-main{font-size:17px;font-weight:700;}
+  .status-sub{font-size:12px;color:var(--dim);margin-top:1px;}
+  .status-meta{font-size:11px;color:var(--dim);margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;}
 
-  button{font-family:inherit;cursor:pointer;border:none;touch-action:manipulation;}
-  button:active{opacity:.75;}
-  .btn-main{width:100%;padding:18px;border-radius:12px;font-size:16px;font-weight:700;letter-spacing:.02em;
-    background:var(--field);color:var(--cream);margin-bottom:8px;min-height:54px;}
-  .btn-main.stop{background:var(--rust);}
-  .btn-main:disabled{background:var(--cream-dim);color:var(--soil);opacity:.6;}
-  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--cream);padding:13px 10px;border-radius:10px;font-size:13px;min-height:44px;}
+  .count-tile{text-align:center;padding:20px 10px;}
+  .count-tile .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:700;margin-bottom:8px;}
+  .count-tile .num{font-size:44px;font-weight:800;line-height:1;}
+  .count-tile.fuhren .num{color:var(--green);}
+  .count-tile.objekte .num{color:var(--blue);}
+  .count-tile .unit{font-size:12px;color:var(--dim);margin-top:4px;}
 
-  .counters{display:flex;gap:12px;}
-  .counter{flex:1;background:var(--soil-2);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:center;}
-  .counter .label{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--cream-dim);margin-bottom:6px;}
-  .counter .val{font-family:Georgia,serif;font-size:42px;font-weight:700;color:var(--straw);line-height:1;}
-  .counter.objects .val{color:var(--cream);}
-  .stepper{display:flex;justify-content:center;gap:10px;margin-top:10px;}
-  .stepper button{width:46px;height:46px;border-radius:10px;background:var(--soil);border:1px solid var(--line);
-    color:var(--cream);font-size:20px;font-weight:700;}
-  .stepper button:active{background:var(--field-dim);}
+  .start-btn{width:100%;padding:22px;border-radius:22px;font-size:18px;font-weight:800;letter-spacing:.01em;
+    background:var(--green);color:#04140a;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px;}
+  .start-btn.stop{background:var(--red);color:#2a0605;}
 
-  details{background:var(--soil-2);border:1px solid var(--line);border-radius:14px;padding:0;margin-bottom:14px;overflow:hidden;}
-  summary{padding:16px;font-weight:700;font-size:14px;list-style:none;display:flex;justify-content:space-between;align-items:center;min-height:22px;}
+  .last-entry{display:flex;justify-content:space-between;align-items:center;}
+  .last-entry .info .tag{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
+  .last-entry .info .desc{font-size:15px;font-weight:700;margin-top:3px;}
+  .qty-stepper{display:flex;align-items:center;gap:10px;}
+  .qty-stepper button{width:36px;height:36px;border-radius:10px;background:var(--tile-2);border:1px solid var(--line);color:var(--text);font-size:18px;font-weight:800;}
+  .qty-stepper .n{min-width:34px;text-align:center;font-weight:800;font-size:17px;}
+
+  .section-lbl{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:700;margin:18px 4px 8px;}
+
+  .field-item{display:flex;justify-content:space-between;align-items:center;padding:14px 4px;border-bottom:1px solid var(--line);}
+  .field-item:last-child{border-bottom:none;}
+  .field-item .name{font-weight:700;font-size:15px;}
+  .field-item .stats{font-size:12px;color:var(--dim);margin-top:2px;}
+  .field-item .active-pill{font-size:10px;background:var(--green-dim);color:var(--green);padding:3px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+
+  details{background:var(--tile);border:1px solid var(--line);border-radius:22px;overflow:hidden;margin-bottom:12px;}
+  summary{padding:16px 16px;font-weight:700;font-size:14px;list-style:none;display:flex;justify-content:space-between;align-items:center;}
   summary::-webkit-details-marker{display:none;}
-  summary::after{content:'▸';color:var(--straw);transition:transform .15s;}
-  details[open] summary::after{transform:rotate(90deg);}
-  .settings-body{padding:2px 16px 16px;border-top:1px solid var(--line);}
-  .setting-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid var(--line);}
+  summary::after{content:'▾';color:var(--dim);}
+  .settings-body{padding:0 16px 16px;border-top:1px solid var(--line);}
+  .setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);gap:10px;}
   .setting-row:last-child{border-bottom:none;}
-  .setting-row .txt{font-size:13px;}
-  .setting-row .txt .hint{display:block;font-size:11px;color:var(--cream-dim);margin-top:2px;}
-  .num-stepper{display:flex;align-items:center;gap:8px;}
-  .num-stepper button{width:40px;height:40px;border-radius:9px;background:var(--soil);border:1px solid var(--line);color:var(--cream);font-size:17px;}
-  .num-stepper .n{min-width:26px;text-align:center;font-weight:700;}
-  .lager-status{font-size:12px;padding:9px 10px;border-radius:8px;background:var(--soil);margin-top:6px;}
-  .lager-status.set{color:var(--field);}
-  .lager-status.unset{color:var(--cream-dim);}
+  .setting-row .txt{font-size:13px;flex:1;}
+  .setting-row .txt .hint{display:block;font-size:11px;color:var(--dim);margin-top:2px;}
+  .ghost-btn{background:var(--tile-2);border:1px solid var(--line);color:var(--text);padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;}
+  .link-btn{background:none;color:var(--red);font-size:12px;font-weight:700;padding:4px;}
 
-  .log-item{display:flex;justify-content:space-between;font-size:14px;padding:9px 0;border-bottom:1px solid var(--line);}
-  .log-item .tag{font-size:10px;color:var(--cream-dim);border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin-left:6px;}
-  .log-item:last-child{border-bottom:none;}
-  .log-empty{font-size:13px;color:var(--cream-dim);padding:8px 0;}
-  .log-head{display:flex;justify-content:space-between;align-items:center;}
-  .link-btn{background:none;border:none;color:var(--rust);font-size:13px;font-weight:700;padding:8px 4px;min-height:32px;}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(2px);z-index:50;
+    display:flex;align-items:flex-end;justify-content:center;}
+  .wizard{background:var(--tile);border-radius:26px 26px 0 0;padding:22px 18px 30px;width:100%;max-width:520px;
+    animation:slideup .2s ease-out;}
+  @keyframes slideup{from{transform:translateY(24px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+  .wizard-step{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:700;}
+  .wizard-title{font-size:20px;font-weight:800;margin:6px 0 4px;}
+  .wizard-sub{font-size:13px;color:var(--dim);margin-bottom:18px;}
+  .choice-btn{width:100%;padding:16px;border-radius:16px;background:var(--tile-2);border:1px solid var(--line);
+    color:var(--text);font-size:15px;font-weight:700;margin-bottom:10px;text-align:left;}
+  .choice-btn.primary{background:var(--green);color:#04140a;border-color:var(--green);}
+  .choice-btn .sub{display:block;font-size:12px;font-weight:400;color:var(--dim);margin-top:2px;}
+  .choice-btn.primary .sub{color:#0a2e18;}
+  .wizard-input{width:100%;padding:14px;border-radius:14px;background:var(--tile-2);border:1px solid var(--line);
+    color:var(--text);font-size:15px;margin-bottom:10px;}
+  .wizard-back{background:none;color:var(--dim);font-size:13px;font-weight:600;padding:6px 0;margin-bottom:6px;}
+  .field-pick{max-height:220px;overflow-y:auto;margin-bottom:8px;}
+  .field-pick .choice-btn{margin-bottom:8px;}
 
-  .footer-note{font-size:11px;color:var(--cream-dim);text-align:center;margin-top:6px;line-height:1.5;}
-  .storage-warning{background:var(--rust);color:var(--cream);font-size:12px;padding:10px 12px;border-radius:10px;margin-bottom:14px;display:none;}
+  .footer-note{font-size:11px;color:var(--dim);text-align:center;margin-top:10px;line-height:1.5;}
 </style>
 </head>
 <body>
 
   <div class="eyebrow">Bezirk Rohrbach · Feld → Lager</div>
   <h1>Fuhren-Tracker</h1>
-  <div class="sub">Erkennt automatisch, wenn eine Fuhre vom Feld zur Lagerstätte fährt.</div>
 
-  <div class="storage-warning" id="storageWarning">Speichern nicht möglich (privater Modus?). Daten gehen beim Schließen verloren.</div>
-
-  <div class="card">
-    <div class="status-row">
-      <div class="dot off" id="gpsDot"></div>
-      <div>
-        <div class="zone-label" id="zoneLabel">Gestoppt</div>
-        <div class="zone-sub" id="zoneSub">Tracking starten, um GPS zu nutzen</div>
-      </div>
+  <div class="tile status-tile">
+    <div class="status-dot off" id="gpsDot"></div>
+    <div style="flex:1;">
+      <div class="status-main" id="zoneLabel">Bereit</div>
+      <div class="status-sub" id="zoneSub">Starten, um eine neue Sitzung zu beginnen</div>
     </div>
-    <div class="gps-meta">
-      <span id="gpsAcc">Genauigkeit: –</span>
-      <span id="gpsCoord">–</span>
+  </div>
+  <div class="tile status-meta" id="metaTile" style="margin-top:-8px;">
+    <span id="gpsAcc">Genauigkeit: –</span>
+    <span id="gpsCoord">–</span>
+  </div>
+
+  <button class="start-btn" id="startBtn">▶ Tracking starten</button>
+
+  <div class="tile-row">
+    <div class="tile count-tile fuhren">
+      <div class="lbl">Fuhren</div>
+      <div class="num" id="fuhrenVal">0</div>
+      <div class="unit" id="feldNameTag">Ohne Feld</div>
+    </div>
+    <div class="tile count-tile objekte">
+      <div class="lbl">Menge</div>
+      <div class="num" id="objekteVal">0</div>
+      <div class="unit" id="einheitTag">Stück</div>
     </div>
   </div>
 
-  <button class="btn-main" id="trackBtn">Tracking starten</button>
-
-  <div class="counters">
-    <div class="counter">
-      <div class="label">Fuhren</div>
-      <div class="val" id="fuhrenVal">0</div>
-      <div class="stepper">
-        <button id="fuhrenMinus" aria-label="Fuhre abziehen">−</button>
-        <button id="fuhrenPlus" aria-label="Fuhre hinzufügen">+</button>
-      </div>
+  <div class="tile last-entry" id="lastEntryTile" style="display:none;">
+    <div class="info">
+      <div class="tag">Letzte Fuhre</div>
+      <div class="desc" id="lastEntryDesc">–</div>
     </div>
-    <div class="counter objects">
-      <div class="label">Objekte</div>
-      <div class="val" id="objekteVal">0</div>
-      <div class="stepper">
-        <span style="font-size:11px;color:var(--cream-dim);align-self:center;">= Fuhren × Multiplikator</span>
-      </div>
+    <div class="qty-stepper">
+      <button id="lastMinus">−</button>
+      <span class="n" id="lastQtyVal">0</span>
+      <button id="lastPlus">+</button>
     </div>
   </div>
 
-  <br>
+  <div class="section-lbl">Felder-Übersicht</div>
+  <div class="tile" id="fieldOverviewTile">
+    <div id="fieldOverviewList"></div>
+  </div>
 
-  <details open>
+  <details>
     <summary>Einstellungen</summary>
     <div class="settings-body">
       <div class="setting-row">
-        <div class="txt">Objekte pro Fuhre
-          <span class="hint">z. B. 3 Ballen pro Fahrt vom Feld zum Lager</span>
+        <div class="txt">Aktuelles Feld
+          <span class="hint" id="currentFieldHint">Ohne Feld</span>
         </div>
-        <div class="num-stepper">
-          <button id="multMinus" aria-label="Multiplikator verringern">−</button>
-          <span class="n" id="multVal">1</span>
-          <button id="multPlus" aria-label="Multiplikator erhöhen">+</button>
+        <button class="ghost-btn" id="switchFieldBtn">Wechseln</button>
+      </div>
+      <div class="setting-row">
+        <div class="txt">Standard-Menge pro Fuhre
+          <span class="hint">Gilt für neu erkannte Fuhren</span>
+        </div>
+        <div class="qty-stepper">
+          <button id="defMinus">−</button>
+          <span class="n" id="defMengeVal">1</span>
+          <button id="defPlus">+</button>
         </div>
       </div>
       <div class="setting-row">
-        <div class="txt">Lagerplatz
-          <span class="hint" id="lagerHint">Wird automatisch erkannt, sobald du 3× zum selben Ort zurückkehrst</span>
-          <div class="lager-status unset" id="lagerStatus">Noch nicht erkannt</div>
+        <div class="txt">Einheit
+          <span class="hint" id="unitHint">Stück</span>
         </div>
+        <button class="ghost-btn" id="changeUnitBtn">Ändern</button>
       </div>
-      <div class="setting-row" style="gap:8px;border-bottom:none;">
-        <button class="btn-ghost" id="setLagerBtn" style="flex:1;">Aktuellen Ort als Lager festlegen</button>
-        <button class="btn-ghost" id="resetLagerBtn" style="flex:1;">Zurücksetzen</button>
+      <div class="setting-row">
+        <div class="txt">Lagerplatz
+          <div class="hint" id="lagerStatus">Noch nicht erkannt</div>
+        </div>
+        <button class="ghost-btn" id="resetLagerBtn">Zurücksetzen</button>
+      </div>
+      <div class="setting-row">
+        <div class="txt">Letzte Fuhre löschen</div>
+        <button class="ghost-btn link-btn" id="undoLastBtn">Löschen</button>
       </div>
     </div>
   </details>
 
-  <details>
-    <summary>Verlauf &amp; Korrektur</summary>
-    <div class="settings-body">
-      <div class="log-head">
-        <span class="hint" style="color:var(--cream-dim);font-size:11px;">Letzte erkannte Fuhren</span>
-        <button class="link-btn" id="undoLastBtn">Letzte löschen</button>
-      </div>
-      <div id="logList"><div class="log-empty">Noch keine Fuhre erkannt.</div></div>
-    </div>
-  </details>
+  <div class="footer-note">Fuhren werden lokal auf diesem Gerät gespeichert.<br>Bildschirm während der Fahrt an lassen, sonst pausiert das GPS.</div>
 
-  <div class="footer-note">Fuhren werden lokal auf diesem Gerät gespeichert.<br>GPS muss aktiv bleiben – Bildschirm während der Fahrt an lassen.</div>
+  <div class="overlay" id="wizardOverlay" style="display:none;">
+    <div class="wizard" id="wizardBody"></div>
+  </div>
 
 <script>
 (function(){
@@ -197,32 +211,30 @@
   const CLUSTER_RADIUS_M = 60;
   const AUTO_LAGER_COUNT = 3;
   const MIN_TRIP_DISTANCE_M = 100;
-  const MAX_ACCURACY_M = 60;      // Fixes ungenauer als das werden nur angezeigt, nicht zur Erkennung genutzt
-  const NOISE_FLOOR_M = 2;        // Mini-Sprünge unterhalb dessen gelten als GPS-Rauschen, nicht als Fahrt
-  const SAVE_THROTTLE_MS = 3000;
+  const STORE_KEY = 'fuhren-tracker-state-v2';
 
-  const STORE_KEY = 'fuhren-tracker-state';
-
-  const defaultState = {
-    fuhren: 0,
-    multiplikator: 1,
+  let state = {
+    einheit: 'Stück',
+    mengeProFuhre: 1,
+    felder: [],
+    log: [],
     lagerplatz: null,
     lagerplatzManual: false,
-    clusters: [],
-    log: [],
-    lastZone: null,            // 'feld' | 'lager' | null (persisted so ein Reload eine laufende Fuhre nicht verwirft)
-    distanceSinceLeftLager: 0
+    clusters: []
   };
-  let state = Object.assign({}, defaultState);
 
-  let storageAvailable = true;
+  let aktuellesFeldId = null;
   let watchId = null;
   let posBuffer = [];
-  let stopped = false;             // true = wir befinden uns aktuell in einem erkannten Halt
+  let stopped = false;          // true = aktuell in einem erkannten Halt (Fix: verhindert Mehrfach-Registrierung durch GPS-Drift)
   let currentStopCentroid = null;
+  let lastZone = null;
+  let distanceSinceLeftLager = 0;
   let lastMovingPos = null;
-  let wakeLock = null;
-  let pendingSave = null;
+  let tracking = false;
+  let wizard = {};
+
+  function uid(){ return Math.random().toString(36).slice(2,9); }
 
   function haversine(a, b){
     const R = 6371000;
@@ -232,80 +244,77 @@
     return 2*R*Math.asin(Math.sqrt(s));
   }
 
-  function saveNow(){
-    try{
-      localStorage.setItem(STORE_KEY, JSON.stringify(state));
-      storageAvailable = true;
-    }catch(e){
-      console.error('Speichern fehlgeschlagen', e);
-      storageAvailable = false;
-    }
-    el('storageWarning').style.display = storageAvailable ? 'none' : 'block';
-  }
   function save(){
-    // Häufige GPS-Ticks nicht ungedrosselt in localStorage schreiben; bei Zustandsänderungen ohnehin oft aufgerufen.
-    if(pendingSave) return;
-    pendingSave = setTimeout(()=>{ pendingSave = null; saveNow(); }, SAVE_THROTTLE_MS);
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+    catch(e){ console.error('Speichern fehlgeschlagen', e); }
   }
   function load(){
     try{
       const raw = localStorage.getItem(STORE_KEY);
-      if(raw){
-        const parsed = JSON.parse(raw);
-        state = Object.assign({}, defaultState, parsed);
-      }
-    }catch(e){
-      console.error('Laden fehlgeschlagen', e);
-      storageAvailable = false;
-    }
+      if(raw) state = Object.assign(state, JSON.parse(raw));
+    }catch(e){}
     render();
   }
-  // Bei Zustandsänderungen, die nicht verloren gehen dürfen, sofort schreiben statt zu drosseln.
-  function saveImportant(){
-    if(pendingSave){ clearTimeout(pendingSave); pendingSave = null; }
-    saveNow();
-  }
-  window.addEventListener('pagehide', saveImportant);
-  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'hidden') saveImportant(); });
 
   const el = id => document.getElementById(id);
-  function render(){
-    el('fuhrenVal').textContent = state.fuhren;
-    el('objekteVal').textContent = state.fuhren * state.multiplikator;
-    el('multVal').textContent = state.multiplikator;
 
-    if(state.lagerplatz){
-      el('lagerStatus').textContent = `Erkannt bei ${state.lagerplatz.lat.toFixed(5)}, ${state.lagerplatz.lon.toFixed(5)}`;
-      el('lagerStatus').className = 'lager-status set';
-    } else {
-      el('lagerStatus').textContent = 'Noch nicht erkannt';
-      el('lagerStatus').className = 'lager-status unset';
-    }
-
-    const logList = el('logList');
-    if(state.log.length === 0){
-      logList.innerHTML = '<div class="log-empty">Noch keine Fuhre erkannt.</div>';
-    } else {
-      logList.innerHTML = state.log.slice().reverse().slice(0,15).map((e,i)=>{
-        const d = new Date(e.ts);
-        const time = d.toLocaleTimeString('de-AT',{hour:'2-digit',minute:'2-digit'});
-        const date = d.toLocaleDateString('de-AT',{day:'2-digit',month:'2-digit'});
-        const tag = e.manual ? '<span class="tag">manuell</span>' : '';
-        return `<div class="log-item"><span>Fuhre #${state.log.length - i}${tag}</span><span>${date} ${time}</span></div>`;
-      }).join('');
-    }
+  function fuhrenForFeld(feldId){ return state.log.filter(e => (e.feldId||null) === (feldId||null)).length; }
+  function mengeForFeld(feldId){ return state.log.filter(e => (e.feldId||null) === (feldId||null)).reduce((s,e)=>s+e.menge,0); }
+  function feldName(feldId){
+    if(!feldId) return 'Ohne Feld';
+    const f = state.felder.find(f=>f.id===feldId);
+    return f ? f.name : 'Unbekannt';
   }
 
-  function setZoneLabel(text, sub, isError){
+  function render(){
+    el('fuhrenVal').textContent = fuhrenForFeld(aktuellesFeldId);
+    el('objekteVal').textContent = mengeForFeld(aktuellesFeldId);
+    el('feldNameTag').textContent = feldName(aktuellesFeldId);
+    el('einheitTag').textContent = state.einheit;
+    el('defMengeVal').textContent = state.mengeProFuhre;
+    el('currentFieldHint').textContent = feldName(aktuellesFeldId);
+    el('unitHint').textContent = state.einheit;
+
+    if(state.lagerplatz){
+      el('lagerStatus').textContent = `Erkannt (${state.lagerplatz.lat.toFixed(4)}, ${state.lagerplatz.lon.toFixed(4)})`;
+    } else {
+      el('lagerStatus').textContent = 'Noch nicht erkannt';
+    }
+
+    if(state.log.length > 0){
+      const last = state.log[state.log.length-1];
+      el('lastEntryTile').style.display = 'flex';
+      el('lastEntryDesc').textContent = `${feldName(last.feldId)} · #${state.log.filter(e=>(e.feldId||null)===(last.feldId||null)).length}`;
+      el('lastQtyVal').textContent = last.menge;
+    } else {
+      el('lastEntryTile').style.display = 'none';
+    }
+
+    const list = el('fieldOverviewList');
+    const buckets = [null, ...state.felder.map(f=>f.id)];
+    const rows = buckets.map(fid=>{
+      const n = fuhrenForFeld(fid);
+      const m = mengeForFeld(fid);
+      if(fid===null && n===0 && state.felder.length>0) return '';
+      const active = fid === aktuellesFeldId;
+      return `<div class="field-item">
+        <div>
+          <div class="name">${feldName(fid)}</div>
+          <div class="stats">${n} Fuhren · ${m} ${state.einheit}</div>
+        </div>
+        ${active ? '<span class="active-pill">Aktiv</span>' : ''}
+      </div>`;
+    }).join('');
+    list.innerHTML = rows || '<div style="color:var(--dim);font-size:13px;padding:6px 4px;">Noch keine Daten.</div>';
+  }
+
+  function setZoneLabel(text, sub){
     el('zoneLabel').textContent = text;
     el('zoneSub').textContent = sub;
-    el('zoneSub').className = 'zone-sub' + (isError ? ' error' : '');
   }
 
   function findCluster(pos){
-    for(const c of state.clusters){
-      if(haversine(c, pos) <= CLUSTER_RADIUS_M) return c;
-    }
+    for(const c of state.clusters){ if(haversine(c, pos) <= CLUSTER_RADIUS_M) return c; }
     return null;
   }
 
@@ -319,71 +328,52 @@
       cluster = {lat: centroid.lat, lon: centroid.lon, count: 1};
       state.clusters.push(cluster);
     }
-
     if(!state.lagerplatzManual){
       const best = state.clusters.reduce((a,b)=> b.count > a.count ? b : a, state.clusters[0]);
-      if(best.count >= AUTO_LAGER_COUNT){
-        state.lagerplatz = {lat: best.lat, lon: best.lon};
-      }
+      if(best.count >= AUTO_LAGER_COUNT) state.lagerplatz = {lat: best.lat, lon: best.lon};
     }
 
     const isLager = state.lagerplatz && haversine(state.lagerplatz, centroid) <= CLUSTER_RADIUS_M;
     if(isLager){
-      if(state.lastZone === 'feld' && state.distanceSinceLeftLager >= MIN_TRIP_DISTANCE_M){
-        state.fuhren += 1;
-        state.log.push({ts: Date.now()});
+      if(lastZone === 'feld' && distanceSinceLeftLager >= MIN_TRIP_DISTANCE_M){
+        state.log.push({id:uid(), ts:Date.now(), feldId:aktuellesFeldId, menge:state.mengeProFuhre, einheit:state.einheit});
         flashCounted();
       }
-      state.lastZone = 'lager';
-      state.distanceSinceLeftLager = 0;
+      lastZone = 'lager';
+      distanceSinceLeftLager = 0;
     } else {
-      state.lastZone = 'feld';
+      lastZone = 'feld';
     }
-    saveImportant(); render();
+    save(); render();
   }
 
   function flashCounted(){
     setZoneLabel('Fuhre gezählt ✓', 'Am Lagerplatz angekommen');
-    setTimeout(()=>{ if(stopped && currentStopCentroid) updateZoneDisplay(currentStopCentroid); }, 2500);
+    setTimeout(()=>{ if(currentStopCentroid) updateZoneDisplay(currentStopCentroid); }, 2200);
   }
-
   function updateZoneDisplay(centroid){
     const isLager = state.lagerplatz && haversine(state.lagerplatz, centroid) <= CLUSTER_RADIUS_M;
-    if(isLager) setZoneLabel('Am Lagerplatz', 'Fahrzeug steht');
-    else setZoneLabel('Halt im Feld', 'Fahrzeug steht');
+    setZoneLabel(isLager ? 'Am Lagerplatz' : 'Halt im Feld', 'Fahrzeug steht');
   }
 
   function onPosition(p){
-    const pos = {lat: p.coords.latitude, lon: p.coords.longitude, t: Date.now()};
-    const accuracy = p.coords.accuracy;
-    const weak = accuracy > MAX_ACCURACY_M;
-    el('gpsAcc').innerHTML = weak
-      ? `Genauigkeit: <span class="weak">±${Math.round(accuracy)} m (schwach)</span>`
-      : `Genauigkeit: ±${Math.round(accuracy)} m`;
+    const pos = {lat:p.coords.latitude, lon:p.coords.longitude, t:Date.now()};
+    el('gpsAcc').textContent = `Genauigkeit: ±${Math.round(p.coords.accuracy)} m`;
     el('gpsCoord').textContent = `${pos.lat.toFixed(5)}, ${pos.lon.toFixed(5)}`;
-    el('gpsDot').className = 'dot ' + (weak ? 'warn' : 'live');
-
-    // Ungenaue Fixe (z.B. zwischen Gebäuden/Wald) verzerren Stopp-Erkennung und Distanzmessung -
-    // nur anzeigen, aber nicht in die Auswertung einspeisen.
-    if(weak) return;
 
     if(lastMovingPos){
       const d = haversine(lastMovingPos, pos);
-      if(!stopped && d > NOISE_FLOOR_M) state.distanceSinceLeftLager += d;
+      if(lastZone !== 'lager') distanceSinceLeftLager += d;
     }
     lastMovingPos = pos;
 
     posBuffer.push(pos);
     posBuffer = posBuffer.filter(q => pos.t - q.t <= MIN_STOP_TIME_MS + 5000);
-
     if(posBuffer.length < 2) return;
 
     let maxSpread = 0;
-    for(let i=0;i<posBuffer.length;i++){
-      for(let j=i+1;j<posBuffer.length;j++){
-        maxSpread = Math.max(maxSpread, haversine(posBuffer[i], posBuffer[j]));
-      }
-    }
+    for(let i=0;i<posBuffer.length;i++) for(let j=i+1;j<posBuffer.length;j++)
+      maxSpread = Math.max(maxSpread, haversine(posBuffer[i], posBuffer[j]));
     const span = pos.t - posBuffer[0].t;
 
     if(maxSpread <= STOP_RADIUS_M && span >= MIN_STOP_TIME_MS){
@@ -392,8 +382,8 @@
         lon: posBuffer.reduce((s,q)=>s+q.lon,0)/posBuffer.length
       };
       if(!stopped){
-        // Neuer Halt: genau einmal registrieren. GPS-Drift innerhalb desselben Halts
-        // darf keine doppelte Fuhren-Zählung auslösen.
+        // Neuer Halt: genau einmal registrieren, sonst zaehlt GPS-Drift innerhalb desselben
+        // Halts als mehrere Besuche und laesst den Lagerplatz zu frueh "erkannt" wirken.
         stopped = true;
         currentStopCentroid = centroid;
         registerStop(centroid);
@@ -404,116 +394,210 @@
     } else {
       stopped = false;
       currentStopCentroid = null;
-      setZoneLabel('In Fahrt', state.lastZone === 'lager' ? 'unterwegs vom Lager' : 'unterwegs am Feld');
+      setZoneLabel('In Fahrt', lastZone === 'lager' ? 'unterwegs vom Lager' : 'unterwegs am Feld');
     }
   }
-
-  function geoErrorMessage(err){
-    switch(err.code){
-      case err.PERMISSION_DENIED:
-        return 'Standortzugriff wurde verweigert. Bitte in den Browser- bzw. Geräteeinstellungen für diese Seite erlauben und neu laden.';
-      case err.POSITION_UNAVAILABLE:
-        return 'Standort momentan nicht ermittelbar (kein GPS-Empfang). Ins Freie gehen und erneut versuchen.';
-      case err.TIMEOUT:
-        return 'Standortabfrage hat zu lange gedauert. Suche läuft weiter…';
-      default:
-        return err.message || 'Unbekannter Standortfehler.';
-    }
-  }
-
   function onError(err){
-    const msg = geoErrorMessage(err);
-    if(err.code === err.TIMEOUT){
-      // watchPosition versucht selbstständig weiter - Fehler nur kurz anzeigen, Tracking läuft weiter.
-      el('gpsDot').className = 'dot warn';
-      setZoneLabel('Suche Standort…', msg, true);
-      return;
-    }
-    // Bei fehlender Berechtigung oder nicht verfügbarem Standort ist der Watch nutzlos - Tracking sauber beenden.
-    el('gpsDot').className = 'dot off';
-    setZoneLabel('GPS-Fehler', msg, true);
-    stopTrackingInternal();
+    const isFatal = err.code === err.PERMISSION_DENIED || err.code === err.POSITION_UNAVAILABLE;
+    if(isFatal) stopTrackingCleanup(); // Watch ist nutzlos - UI/Button sonst dauerhaft in "Tracking stoppen" haengen geblieben
+    setZoneLabel('GPS-Fehler', err.message || 'Standort nicht verfügbar');
+    el('gpsDot').className = 'status-dot off';
   }
 
-  async function acquireWakeLock(){
-    if(!('wakeLock' in navigator)) return;
-    try{
-      wakeLock = await navigator.wakeLock.request('screen');
-      wakeLock.addEventListener('release', ()=>{ wakeLock = null; });
-    }catch(e){ /* z.B. Akkusparmodus - kein Blocker für das Tracking */ }
+  function beginGpsWatch(){
+    if(!navigator.geolocation){ setZoneLabel('Nicht unterstützt', 'Kein GPS im Browser verfügbar'); return; }
+    watchId = navigator.geolocation.watchPosition(onPosition, onError, {enableHighAccuracy:true, maximumAge:2000, timeout:15000});
+    el('gpsDot').className = 'status-dot live';
   }
-  function releaseWakeLock(){
-    if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock = null; }
-  }
-  document.addEventListener('visibilitychange', ()=>{
-    if(document.visibilityState === 'visible' && watchId !== null) acquireWakeLock();
-  });
-
-  async function startTracking(){
-    if(!navigator.geolocation){
-      setZoneLabel('Nicht unterstützt', 'Dieses Gerät bietet kein GPS im Browser', true);
-      return;
-    }
-
-    if(navigator.permissions && navigator.permissions.query){
-      try{
-        const status = await navigator.permissions.query({name:'geolocation'});
-        if(status.state === 'denied'){
-          setZoneLabel('Kein Standortzugriff', 'Bitte Standortfreigabe für diese Seite in den Einstellungen erlauben.', true);
-          return;
-        }
-      }catch(e){ /* Permissions API nicht auf allen Browsern verfügbar - einfach weitermachen */ }
-    }
-
-    watchId = navigator.geolocation.watchPosition(onPosition, onError, {
-      enableHighAccuracy: true, maximumAge: 2000, timeout: 15000
-    });
-    acquireWakeLock();
-    el('gpsDot').className = 'dot warn';
-    el('trackBtn').textContent = 'Tracking stoppen';
-    el('trackBtn').classList.add('stop');
-    setZoneLabel('Suche Standort…', 'GPS wird initialisiert');
-  }
-  function stopTrackingInternal(){
+  function stopTrackingCleanup(){
     if(watchId !== null) navigator.geolocation.clearWatch(watchId);
-    watchId = null;
-    posBuffer = [];
-    stopped = false;
-    currentStopCentroid = null;
-    releaseWakeLock();
-    el('gpsDot').className = 'dot off';
-    el('trackBtn').textContent = 'Tracking starten';
-    el('trackBtn').classList.remove('stop');
-    saveImportant();
+    watchId = null; tracking = false;
+    posBuffer = []; stopped = false; currentStopCentroid = null;
+    el('gpsDot').className = 'status-dot off';
+    el('startBtn').innerHTML = '▶ Tracking starten';
+    el('startBtn').classList.remove('stop');
   }
   function stopTracking(){
-    stopTrackingInternal();
-    setZoneLabel('Gestoppt', 'Tracking starten, um GPS zu nutzen');
+    stopTrackingCleanup();
+    setZoneLabel('Gestoppt', 'Starten, um eine neue Sitzung zu beginnen');
   }
 
-  el('trackBtn').addEventListener('click', ()=>{
-    if(watchId === null) startTracking(); else stopTracking();
+  function showWizard(html){ el('wizardBody').innerHTML = html; el('wizardOverlay').style.display='flex'; }
+  function hideWizard(){ el('wizardOverlay').style.display='none'; }
+
+  function wizardStepFeld(){
+    wizard = {};
+    showWizard(`
+      <div class="wizard-step">Schritt 1 von 3</div>
+      <div class="wizard-title">Feld zuordnen?</div>
+      <div class="wizard-sub">Damit du weißt, wie viele Fuhren von welchem Feld kamen.</div>
+      <button class="choice-btn primary" id="wzPickFeld">Feld auswählen<span class="sub">Bestehendes Feld wählen oder neues anlegen</span></button>
+      <button class="choice-btn" id="wzNoFeld">Ohne Feld fortfahren<span class="sub">Fuhren werden nicht einem Feld zugeordnet</span></button>
+    `);
+    el('wzPickFeld').onclick = wizardStepFeldList;
+    el('wzNoFeld').onclick = ()=>{ wizard.feldId = null; wizardStepZone(); };
+  }
+
+  function wizardStepFeldList(){
+    const existing = state.felder.map(f=>`<button class="choice-btn wz-existing-feld" data-id="${f.id}">${f.name}</button>`).join('');
+    showWizard(`
+      <button class="wizard-back" id="wzBack">‹ Zurück</button>
+      <div class="wizard-step">Schritt 1 von 3</div>
+      <div class="wizard-title">Welches Feld?</div>
+      <div class="field-pick">${existing || '<div style="color:var(--dim);font-size:13px;">Noch keine Felder angelegt.</div>'}</div>
+      <input class="wizard-input" id="wzNewFeldName" placeholder="Name für neues Feld, z. B. Nordacker">
+      <button class="choice-btn primary" id="wzCreateFeld">+ Neues Feld anlegen</button>
+    `);
+    el('wzBack').onclick = wizardStepFeld;
+    el('wzCreateFeld').onclick = ()=>{
+      const name = el('wzNewFeldName').value.trim();
+      if(!name){ el('wzNewFeldName').focus(); return; }
+      const f = {id:uid(), name};
+      state.felder.push(f); save();
+      wizard.feldId = f.id;
+      wizardStepZone();
+    };
+    document.querySelectorAll('.wz-existing-feld').forEach(btn=>{
+      btn.onclick = ()=>{ wizard.feldId = btn.dataset.id; wizardStepZone(); };
+    });
+  }
+
+  function wizardStepZone(){
+    showWizard(`
+      <button class="wizard-back" id="wzBack">‹ Zurück</button>
+      <div class="wizard-step">Schritt 2 von 3</div>
+      <div class="wizard-title">Wo befindest du dich gerade?</div>
+      <div class="wizard-sub">Die App prüft trotzdem selbst anhand der gefahrenen Strecke, ob es passt.</div>
+      <button class="choice-btn primary" id="wzAmFeld">Am Feld</button>
+      <button class="choice-btn" id="wzAmLager">Am Lagerplatz / Abladeplatz</button>
+    `);
+    el('wzBack').onclick = wizard.feldId===null ? wizardStepFeld : wizardStepFeldList;
+    el('wzAmFeld').onclick = ()=>{ wizard.startZone='feld'; wizardStepUnit(); };
+    el('wzAmLager').onclick = ()=>{ wizard.startZone='lager'; wizardStepUnit(); };
+  }
+
+  function wizardStepUnit(){
+    wizard.einheit = wizard.einheit || state.einheit;
+    wizard.menge = wizard.menge || state.mengeProFuhre;
+    renderUnitStep();
+  }
+  function renderUnitStep(){
+    showWizard(`
+      <button class="wizard-back" id="wzBack">‹ Zurück</button>
+      <div class="wizard-step">Schritt 3 von 3</div>
+      <div class="wizard-title">Wie soll gezählt werden?</div>
+      <div class="wizard-sub">Einheit und Menge pro Fuhre festlegen.</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <button class="choice-btn wz-unit-btn ${wizard.einheit==='Stück'?'primary':''}" data-u="Stück" style="margin-bottom:0;">Stück</button>
+        <button class="choice-btn wz-unit-btn ${wizard.einheit==='m³'?'primary':''}" data-u="m³" style="margin-bottom:0;">m³</button>
+      </div>
+      <input class="wizard-input" id="wzCustomUnit" placeholder="Andere Einheit (optional, z. B. Tonnen)" value="${(wizard.einheit!=='Stück'&&wizard.einheit!=='m³')?wizard.einheit:''}">
+      <div class="setting-row" style="border:none;padding:6px 2px 18px;">
+        <div class="txt">Menge pro Fuhre</div>
+        <div class="qty-stepper">
+          <button id="wzMengeMinus">−</button>
+          <span class="n" id="wzMengeVal">${wizard.menge}</span>
+          <button id="wzMengePlus">+</button>
+        </div>
+      </div>
+      <button class="choice-btn primary" id="wzFinish">Zähler starten</button>
+    `);
+    document.querySelectorAll('.wz-unit-btn').forEach(btn=>{
+      btn.onclick = ()=>{ wizard.einheit = btn.dataset.u; el('wzCustomUnit').value=''; renderUnitStep(); };
+    });
+    el('wzCustomUnit').oninput = (e)=>{ if(e.target.value.trim()) wizard.einheit = e.target.value.trim(); };
+    el('wzMengeMinus').onclick = ()=>{ if(wizard.menge>1){ wizard.menge--; el('wzMengeVal').textContent = wizard.menge; } };
+    el('wzMengePlus').onclick = ()=>{ wizard.menge++; el('wzMengeVal').textContent = wizard.menge; };
+
+    // Fix: Bindung haengt vom Aufruf-Kontext ab (voller Onboarding-Wizard vs. "Einheit aendern"
+    // aus den Einstellungen), damit ein erneutes Rendern (z.B. durch Klick auf Stueck/m3) die
+    // jeweils richtigen Finish-/Zurueck-Handler nicht durch die des jeweils anderen Kontexts ersetzt.
+    if(wizard.mode === 'editUnit'){
+      el('wzBack').onclick = hideWizard;
+      el('wzFinish').textContent = 'Speichern';
+      el('wzFinish').onclick = ()=>{
+        const customVal = el('wzCustomUnit') ? el('wzCustomUnit').value.trim() : '';
+        if(customVal) wizard.einheit = customVal;
+        state.einheit = wizard.einheit || 'Stück';
+        state.mengeProFuhre = wizard.menge || 1;
+        save(); hideWizard(); render();
+      };
+    } else {
+      el('wzBack').onclick = wizardStepZone;
+      el('wzFinish').textContent = 'Zähler starten';
+      el('wzFinish').onclick = finishWizard;
+    }
+  }
+
+  function finishWizard(){
+    const customVal = el('wzCustomUnit') ? el('wzCustomUnit').value.trim() : '';
+    if(customVal) wizard.einheit = customVal;
+    aktuellesFeldId = wizard.feldId;
+    state.einheit = wizard.einheit || 'Stück';
+    state.mengeProFuhre = wizard.menge || 1;
+    lastZone = wizard.startZone === 'lager' ? 'lager' : 'feld';
+    distanceSinceLeftLager = 0;
+    save();
+    hideWizard();
+    tracking = true;
+    el('startBtn').innerHTML = '■ Tracking stoppen';
+    el('startBtn').classList.add('stop');
+    setZoneLabel('Suche Standort…', 'GPS wird initialisiert');
+    beginGpsWatch();
+    render();
+  }
+
+  function wizardSwitchFieldOnly(){
+    const existing = state.felder.map(f=>`<button class="choice-btn wz-existing-feld2" data-id="${f.id}">${f.name}</button>`).join('');
+    showWizard(`
+      <div class="wizard-step">Feld wechseln</div>
+      <div class="wizard-title">Welches Feld?</div>
+      <div class="field-pick">
+        <button class="choice-btn" id="wzNoFeld2">Ohne Feld</button>
+        ${existing}
+      </div>
+      <input class="wizard-input" id="wzNewFeldName2" placeholder="Name für neues Feld">
+      <button class="choice-btn primary" id="wzCreateFeld2">+ Neues Feld anlegen</button>
+      <button class="wizard-back" id="wzCancel2" style="margin-top:6px;">Abbrechen</button>
+    `);
+    el('wzNoFeld2').onclick = ()=>{ aktuellesFeldId=null; hideWizard(); render(); };
+    el('wzCancel2').onclick = hideWizard;
+    el('wzCreateFeld2').onclick = ()=>{
+      const name = el('wzNewFeldName2').value.trim();
+      if(!name) return;
+      const f = {id:uid(), name}; state.felder.push(f); save();
+      aktuellesFeldId = f.id; hideWizard(); render();
+    };
+    document.querySelectorAll('.wz-existing-feld2').forEach(btn=>{
+      btn.onclick = ()=>{ aktuellesFeldId = btn.dataset.id; hideWizard(); render(); };
+    });
+  }
+
+  el('startBtn').addEventListener('click', ()=>{
+    if(tracking){ stopTracking(); } else { wizardStepFeld(); }
   });
-  el('fuhrenPlus').addEventListener('click', ()=>{ state.fuhren++; state.log.push({ts:Date.now(), manual:true}); saveImportant(); render(); });
-  el('fuhrenMinus').addEventListener('click', ()=>{ if(state.fuhren>0){ state.fuhren--; state.log.pop(); saveImportant(); render(); } });
-  el('multPlus').addEventListener('click', ()=>{ state.multiplikator++; saveImportant(); render(); });
-  el('multMinus').addEventListener('click', ()=>{ if(state.multiplikator>1){ state.multiplikator--; saveImportant(); render(); } });
-  el('setLagerBtn').addEventListener('click', ()=>{
-    if(!lastMovingPos){ alert('Noch keine GPS-Position vorhanden. Tracking starten und kurz warten.'); return; }
-    state.lagerplatz = {lat: lastMovingPos.lat, lon: lastMovingPos.lon};
-    state.lagerplatzManual = true;
-    saveImportant(); render();
+  el('switchFieldBtn').addEventListener('click', wizardSwitchFieldOnly);
+  el('changeUnitBtn').addEventListener('click', ()=>{
+    wizard = {einheit: state.einheit, menge: state.mengeProFuhre, mode: 'editUnit'};
+    renderUnitStep();
   });
+  el('defMinus').addEventListener('click', ()=>{ if(state.mengeProFuhre>1){ state.mengeProFuhre--; save(); render(); } });
+  el('defPlus').addEventListener('click', ()=>{ state.mengeProFuhre++; save(); render(); });
   el('resetLagerBtn').addEventListener('click', ()=>{
-    if(!confirm('Lagerplatz und gelernte Stopp-Historie wirklich zurücksetzen?')) return;
-    state.lagerplatz = null; state.lagerplatzManual = false; state.clusters = [];
-    saveImportant(); render();
+    state.lagerplatz=null; state.lagerplatzManual=false; state.clusters=[]; save(); render();
   });
   el('undoLastBtn').addEventListener('click', ()=>{
     if(state.log.length===0) return;
-    state.log.pop();
-    if(state.fuhren>0) state.fuhren--;
-    saveImportant(); render();
+    state.log.pop(); save(); render();
+  });
+  el('lastPlus').addEventListener('click', ()=>{
+    if(state.log.length===0) return;
+    state.log[state.log.length-1].menge++; save(); render();
+  });
+  el('lastMinus').addEventListener('click', ()=>{
+    if(state.log.length===0) return;
+    const last = state.log[state.log.length-1];
+    if(last.menge>0){ last.menge--; save(); render(); }
   });
 
   if('serviceWorker' in navigator){

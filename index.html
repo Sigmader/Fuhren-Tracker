@@ -602,7 +602,17 @@
 
   if('serviceWorker' in navigator){
     window.addEventListener('load', ()=>{
-      navigator.serviceWorker.register('sw.js').catch(e => console.error('Service Worker Registrierung fehlgeschlagen', e));
+      navigator.serviceWorker.register('sw.js').then((reg) => {
+        reg.update(); // sofort auf eine neuere Version pruefen statt auf den Browser-Standardintervall zu warten
+      }).catch(e => console.error('Service Worker Registrierung fehlgeschlagen', e));
+    });
+    // Sobald eine neue Version die Kontrolle uebernimmt, einmalig neu laden, damit Nutzer nicht auf
+    // einem veralteten, bereits gecachten Stand haengen bleiben (siehe Cache-Strategie in sw.js).
+    let refreshedOnce = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if(refreshedOnce) return;
+      refreshedOnce = true;
+      window.location.reload();
     });
   }
 

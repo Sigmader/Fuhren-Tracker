@@ -1,5 +1,5 @@
-// Bump on every deploy to invalidate old caches.
-const CACHE_NAME = 'fuhren-tracker-v1';
+// Bump on every deploy - forces the "activate" handler below to purge the old cache.
+const CACHE_NAME = 'fuhren-tracker-v2';
 const APP_SHELL = [
   './index.html',
   './manifest.json',
@@ -32,6 +32,27 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
 
+  const isAppShellDocument = event.request.mode === 'navigate' || url.pathname.endsWith('index.html');
+
+  if (isAppShellDocument) {
+    // Network-first: online users always get the latest deploy. Cache is only a fallback
+    // for offline use, never a permanent substitute for a fresh fetch (that was the bug -
+    // a cache-first policy here meant updates never reached devices that had already cached it).
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request).then((cached) => cached || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  // Static assets (icons, manifest) change rarely - cache-first is fine, CACHE_NAME bump handles updates.
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
@@ -42,8 +63,7 @@ self.addEventListener('fetch', (event) => {
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
           }
           return response;
-        })
-        .catch(() => caches.match('./index.html'));
+        });
     })
   );
 });

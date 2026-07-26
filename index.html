@@ -90,11 +90,14 @@
   .link-btn{background:none;color:var(--red);font-size:12px;font-weight:700;padding:4px;}
 
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(2px);z-index:50;
-    display:flex;align-items:flex-end;justify-content:center;}
-  .wizard{background:var(--tile);border-radius:26px 26px 0 0;padding:22px 18px 30px;width:100%;max-width:520px;
-    animation:slideup .2s ease-out;}
-  @keyframes slideup{from{transform:translateY(24px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-  .wizard-step{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:700;}
+    display:flex;align-items:center;justify-content:center;padding:20px;}
+  .wizard{position:relative;background:var(--tile);border-radius:26px;padding:22px 18px 26px;width:100%;max-width:480px;
+    max-height:calc(100vh - 40px);overflow-y:auto;animation:popin .18s ease-out;}
+  @keyframes popin{from{transform:scale(.96);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .wizard-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;
+    background:var(--tile-2);border:1px solid var(--line);color:var(--dim);font-size:18px;line-height:1;
+    display:flex;align-items:center;justify-content:center;}
+  .wizard-step{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding-right:40px;}
   .wizard-title{font-size:20px;font-weight:800;margin:6px 0 4px;}
   .wizard-sub{font-size:13px;color:var(--dim);margin-bottom:18px;}
   .choice-btn{width:100%;padding:16px;border-radius:16px;background:var(--tile-2);border:1px solid var(--line);
@@ -422,7 +425,11 @@
     setZoneLabel('Gestoppt', 'Starten, um eine neue Sitzung zu beginnen');
   }
 
-  function showWizard(html){ el('wizardBody').innerHTML = html; el('wizardOverlay').style.display='flex'; }
+  function showWizard(html){
+    el('wizardBody').innerHTML = `<button class="wizard-close" id="wzClose" aria-label="Abbrechen">×</button>` + html;
+    el('wizardOverlay').style.display='flex';
+    el('wzClose').onclick = hideWizard;
+  }
   function hideWizard(){ el('wizardOverlay').style.display='none'; }
 
   function wizardStepFeld(){

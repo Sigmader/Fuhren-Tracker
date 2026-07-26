@@ -1,12 +1,12 @@
 // Bump on every deploy - forces the "activate" handler below to purge the old cache.
-const CACHE_NAME = 'fuhren-tracker-v2';
+const CACHE_NAME = 'fuhren-tracker-v3';
 const APP_SHELL = [
   './index.html',
   './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-192-maskable.png',
-  './icons/icon-512-maskable.png'
+  './icon27-favicon-32.png',
+  './icon27-180.png',
+  './icon27-192.png',
+  './icon27-512.png'
 ];
 
 self.addEventListener('install', (event) => {

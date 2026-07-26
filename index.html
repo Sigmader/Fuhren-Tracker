@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0b0d10">
+<meta name="theme-color" content="#f2f2f7">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Fuhren">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon-192.png">
@@ -14,19 +14,19 @@
 <title>Fuhren-Tracker</title>
 <style>
   :root{
-    --bg:#0b0d10;
-    --tile:#16191d;
-    --tile-2:#1e2227;
-    --line:#2a2e34;
-    --text:#f2f3f5;
-    --dim:#8a8f98;
-    --green:#30d158;
-    --green-dim:#1f5c33;
-    --blue:#0a84ff;
-    --blue-dim:#12395e;
-    --orange:#ff9f0a;
-    --red:#ff453a;
-    --red-dim:#5c211d;
+    --bg:#f2f2f7;
+    --tile:#ffffff;
+    --tile-2:#eceef1;
+    --line:#d9d9de;
+    --text:#1c1c1e;
+    --dim:#6b6b70;
+    --green:#1f8a44;
+    --green-dim:#d7f3df;
+    --blue:#007aff;
+    --blue-dim:#d6e9ff;
+    --orange:#c96a00;
+    --red:#d9362b;
+    --red-dim:#fbdad7;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
@@ -44,9 +44,9 @@
 
   .status-tile{display:flex;align-items:center;gap:12px;}
   .status-dot{width:12px;height:12px;border-radius:50%;background:var(--dim);flex-shrink:0;}
-  .status-dot.live{background:var(--green);box-shadow:0 0 0 0 rgba(48,209,88,.6);animation:pulse 2s infinite;}
+  .status-dot.live{background:var(--green);box-shadow:0 0 0 0 rgba(31,138,68,.6);animation:pulse 2s infinite;}
   .status-dot.off{background:var(--red);}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(48,209,88,.5);}70%{box-shadow:0 0 0 9px rgba(48,209,88,0);}100%{box-shadow:0 0 0 0 rgba(48,209,88,0);}}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(31,138,68,.5);}70%{box-shadow:0 0 0 9px rgba(31,138,68,0);}100%{box-shadow:0 0 0 0 rgba(31,138,68,0);}}
   .status-main{font-size:17px;font-weight:700;}
   .status-sub{font-size:12px;color:var(--dim);margin-top:1px;}
   .status-meta{font-size:11px;color:var(--dim);margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;}

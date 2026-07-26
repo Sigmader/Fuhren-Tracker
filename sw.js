@@ -1,5 +1,5 @@
 // Bump on every deploy - forces the "activate" handler below to purge the old cache.
-const CACHE_NAME = 'fuhren-tracker-v3';
+const CACHE_NAME = 'fuhren-tracker-v4';
 const APP_SHELL = [
   './index.html',
   './manifest.json',
@@ -52,18 +52,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Static assets (icons, manifest) change rarely - cache-first is fine, CACHE_NAME bump handles updates.
+  // Static assets (icons, manifest): stale-while-revalidate. Serves the cached copy immediately
+  // (fast, works offline) but always refetches in the background and updates the cache for next
+  // time - so editing an icon's *content* without renaming the file self-heals within one extra
+  // load instead of being stuck forever (that was the bug: pure cache-first never revalidated).
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request)
-        .then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return response;
-        });
-    })
+    caches.open(CACHE_NAME).then((cache) =>
+      cache.match(event.request).then((cached) => {
+        const networkFetch = fetch(event.request)
+          .then((response) => {
+            if (response.ok) cache.put(event.request, response.clone());
+            return response;
+          })
+          .catch(() => cached);
+        return cached || networkFetch;
+      })
+    )
   );
 });

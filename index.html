@@ -219,7 +219,11 @@
   const MIN_STOP_TIME_MS = 25000;
   const CLUSTER_RADIUS_M = 60;
   const AUTO_LAGER_COUNT = 3;
-  const MIN_TRIP_DISTANCE_M = 100;
+  const MIN_TRIP_DISTANCE_M = 100; // Startwert, bis genug Fuhren gelernt wurden
+  const LEARN_MIN_SAMPLES = 3;     // ab wie vielen Fuhren pro Feld gelernt wird
+  const LEARN_MAX_SAMPLES = 8;     // wie viele letzte Fuhren pro Feld gespeichert werden
+  const LEARN_FACTOR = 0.6;        // gelernte Mindestdistanz = 60% der kürzesten bisher gesehenen echten Fuhre
+  const LEARN_FLOOR_M = 30;        // absolute Untergrenze, damit auch bei sehr kurzen Strecken keine Fehlzählung entsteht
   const STORE_KEY = 'fuhren-tracker-state-v2';
 
   let state = {
@@ -229,7 +233,8 @@
     log: [],
     lagerplatz: null,
     lagerplatzManual: false,
-    clusters: []
+    clusters: [],
+    feldTripStats: {}
   };
 
   let aktuellesFeldId = null;
@@ -317,6 +322,26 @@
     el('statusBox').className = 'status ' + (mode||'');
   }
 
+  function tripKey(feldId){ return feldId || '_ohne_feld_'; }
+
+  // Liefert die aktuell gültige Mindestdistanz für "echte Fuhre" zu diesem Feld:
+  // solange zu wenig Beobachtungen da sind, der feste Startwert; danach 60% der
+  // kürzesten bisher tatsächlich gezählten Fuhre (mit Sicherheits-Untergrenze).
+  function getMinTripDistance(feldId){
+    const stats = state.feldTripStats[tripKey(feldId)];
+    if(!stats || stats.length < LEARN_MIN_SAMPLES) return MIN_TRIP_DISTANCE_M;
+    const shortest = Math.min(...stats);
+    return Math.max(LEARN_FLOOR_M, shortest * LEARN_FACTOR);
+  }
+
+  function recordTripDistance(feldId, distanceM){
+    const key = tripKey(feldId);
+    const list = state.feldTripStats[key] || [];
+    list.push(Math.round(distanceM));
+    while(list.length > LEARN_MAX_SAMPLES) list.shift();
+    state.feldTripStats[key] = list;
+  }
+
   function findCluster(pos){
     for(const c of state.clusters){ if(haversine(c, pos) <= CLUSTER_RADIUS_M) return c; }
     return null;
@@ -334,29 +359,52 @@
       cluster = {lat: centroid.lat, lon: centroid.lon, count: 1};
       state.clusters.push(cluster);
     }
-    if(!state.lagerplatzManual){
+    // Nur zur ERST-Erkennung nutzen: ist der Lagerplatz schon bekannt (automatisch oder durch den
+    // "wandernden Mittelpunkt" in checkZoneTransition), darf ein spaeter erkannter Halt ihn nicht
+    // wieder auf den urspruenglichen Cluster zurueckziehen - sonst wird das Mitwandern sofort
+    // durch jeden weiteren Halt am Lagerplatz rueckgaengig gemacht.
+    if(!state.lagerplatzManual && !state.lagerplatz){
       const best = state.clusters.reduce((a,b)=> b.count > a.count ? b : a, state.clusters[0]);
       if(best.count >= AUTO_LAGER_COUNT) state.lagerplatz = {lat: best.lat, lon: best.lon};
     }
     save(); render();
   }
 
-  // Zählt eine Fuhre, sobald die Position in die Lagerplatz-Zone eintritt —
-  // unabhängig davon, ob dabei angehalten wird (wichtig z.B. beim Entladen in Fahrt).
+  // Zeit, die man im Lagerplatz-Bereich verbringen muss (auch langsam fahrend),
+  // damit eine Fuhre gezählt wird. Verhindert Zählung beim bloßen Durchfahren.
+  const LAGER_DWELL_MS = 20000;
+
+  // Zählt eine Fuhre, wenn die Position sich lange genug (LAGER_DWELL_MS) in der
+  // Lagerplatz-Zone aufhält — unabhängig davon, ob dabei angehalten wird
+  // (wichtig z.B. beim Entladen in Fahrt). Reines Durchfahren zählt nicht.
   let inLagerZone = false;
+  let zoneEnterTime = null;
+  let countedThisVisit = false;
   function checkZoneTransition(pos){
     if(!state.lagerplatz) return;
     const isLager = haversine(state.lagerplatz, pos) <= CLUSTER_RADIUS_M;
-    if(isLager && !inLagerZone){
-      if(distanceSinceLeftLager >= MIN_TRIP_DISTANCE_M){
-        state.log.push({id:uid(), ts:Date.now(), feldId:aktuellesFeldId, menge:state.mengeProFuhre, einheit:state.einheit});
-        flashCounted();
+    if(isLager){
+      if(!inLagerZone){
+        inLagerZone = true;
+        zoneEnterTime = Date.now();
+        countedThisVisit = false;
+      } else if(!countedThisVisit && (Date.now() - zoneEnterTime) >= LAGER_DWELL_MS){
+        if(distanceSinceLeftLager >= getMinTripDistance(aktuellesFeldId)){
+          state.log.push({id:uid(), ts:Date.now(), feldId:aktuellesFeldId, menge:state.mengeProFuhre, einheit:state.einheit});
+          recordTripDistance(aktuellesFeldId, distanceSinceLeftLager);
+          // Ablageort wandert mit: der Lagerplatz-Mittelpunkt rückt auf die aktuelle
+          // Position nach, damit z.B. bei wachsendem Ballenstapel die Zone mitwächst.
+          state.lagerplatz = {lat: pos.lat, lon: pos.lon};
+          flashCounted();
+        }
+        countedThisVisit = true;
+        distanceSinceLeftLager = 0;
+        save(); render();
       }
-      inLagerZone = true;
-      distanceSinceLeftLager = 0;
-      save(); render();
-    } else if(!isLager){
+    } else {
       inLagerZone = false;
+      zoneEnterTime = null;
+      countedThisVisit = false;
     }
   }
 
@@ -407,7 +455,12 @@
     } else {
       stopped = false;
       currentStopCentroid = null;
-      setZoneLabel('In Fahrt', inLagerZone ? 'am Lagerplatz' : 'am Feld unterwegs', 'live');
+      if(inLagerZone && !countedThisVisit && zoneEnterTime){
+        const remain = Math.max(0, Math.ceil((LAGER_DWELL_MS - (Date.now()-zoneEnterTime))/1000));
+        setZoneLabel('Am Lagerplatz', remain > 0 ? `noch ${remain}s bis Zählung` : 'wird gezählt…', 'live');
+      } else {
+        setZoneLabel('In Fahrt', inLagerZone ? 'am Lagerplatz' : 'am Feld unterwegs', 'live');
+      }
     }
     el('gpsAcc').textContent = accTxt;
   }

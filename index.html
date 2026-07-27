@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#f2f2f7">
+<meta name="theme-color" content="#faf9f6">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -14,194 +14,200 @@
 <title>Fuhren-Tracker</title>
 <style>
   :root{
-    --bg:#f2f2f7;
-    --tile:#ffffff;
-    --tile-2:#eceef1;
-    --line:#d9d9de;
-    --text:#1c1c1e;
-    --dim:#6b6b70;
-    --green:#1f8a44;
-    --green-dim:#d7f3df;
-    --blue:#007aff;
-    --blue-dim:#d6e9ff;
-    --orange:#c96a00;
-    --red:#d9362b;
-    --red-dim:#fbdad7;
+    --bg:#faf9f6;
+    --surface:#ffffff;
+    --ink:#1e2321;
+    --ink-dim:#767e73;
+    --line:#e6e3d9;
+    --green:#2f6b4f;
+    --green-soft:#e7f0ea;
+    --orange:#c05a1e;
+    --orange-soft:#f7e9dd;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
     min-height:100vh;overscroll-behavior:none;}
-  body{padding:16px 14px 50px;}
-  button{font-family:inherit;cursor:pointer;border:none;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;}
 
-  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:2px;}
-  h1{font-size:26px;margin:0 0 14px;font-weight:800;letter-spacing:-.01em;}
+  .header{padding:26px 22px 18px;}
+  .brand{font-size:20px;font-weight:700;letter-spacing:-.01em;}
+  .brand-sub{font-size:12.5px;color:var(--ink-dim);margin-top:2px;}
 
-  .tile{background:var(--tile);border:1px solid var(--line);border-radius:22px;padding:16px;margin-bottom:12px;}
-  .tile-row{display:flex;gap:12px;}
-  .tile-row .tile{flex:1;margin-bottom:0;}
+  .status{margin:0 22px 20px;padding:12px 14px;background:var(--green-soft);border-radius:10px;
+    display:flex;align-items:center;gap:9px;}
+  .status.off{background:#f1f0eb;}
+  .status.err{background:var(--orange-soft);}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
+  .status.off .status-dot{background:var(--ink-dim);}
+  .status.err .status-dot{background:var(--orange);}
+  .status-text{font-size:13px;color:var(--green);font-weight:700;}
+  .status.off .status-text{color:var(--ink-dim);}
+  .status.err .status-text{color:var(--orange);}
+  .status-sub{font-size:11.5px;color:var(--ink-dim);margin-left:auto;}
 
-  .status-tile{display:flex;align-items:center;gap:12px;}
-  .status-dot{width:12px;height:12px;border-radius:50%;background:var(--dim);flex-shrink:0;}
-  .status-dot.live{background:var(--green);box-shadow:0 0 0 0 rgba(31,138,68,.6);animation:pulse 2s infinite;}
-  .status-dot.off{background:var(--red);}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(31,138,68,.5);}70%{box-shadow:0 0 0 9px rgba(31,138,68,0);}100%{box-shadow:0 0 0 0 rgba(31,138,68,0);}}
-  .status-main{font-size:17px;font-weight:700;}
-  .status-sub{font-size:12px;color:var(--dim);margin-top:1px;}
-  .status-meta{font-size:11px;color:var(--dim);margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;}
+  .hero{padding:6px 22px 26px;text-align:center;}
+  .hero-label{font-size:12px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+  .hero-num{font-size:72px;font-weight:700;line-height:1;color:var(--ink);letter-spacing:-.02em;}
+  .hero-field{font-size:15px;font-weight:700;color:var(--green);margin-top:6px;}
+  .hero-sum{font-size:12.5px;color:var(--ink-dim);margin-top:6px;}
 
-  .count-tile{text-align:center;padding:20px 10px;}
-  .count-tile .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:700;margin-bottom:8px;}
-  .count-tile .num{font-size:44px;font-weight:800;line-height:1;}
-  .count-tile.fuhren .num{color:var(--green);}
-  .count-tile.objekte .num{color:var(--blue);}
-  .count-tile .unit{font-size:12px;color:var(--dim);margin-top:4px;}
+  .btn-row{padding:0 22px 22px;}
+  .btn{width:100%;padding:16px;background:var(--green);color:#fff;border-radius:12px;
+    font-weight:700;font-size:15px;text-align:center;display:block;}
+  .btn.stop{background:var(--orange);}
 
-  .start-btn{width:100%;padding:22px;border-radius:22px;font-size:18px;font-weight:800;letter-spacing:.01em;
-    background:var(--green);color:#04140a;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px;}
-  .start-btn.stop{background:var(--red);color:#2a0605;}
+  .divider{height:1px;background:var(--line);margin:0 22px;}
 
-  .last-entry{display:flex;justify-content:space-between;align-items:center;}
-  .last-entry .info .tag{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;font-weight:700;}
-  .last-entry .info .desc{font-size:15px;font-weight:700;margin-top:3px;}
-  .qty-stepper{display:flex;align-items:center;gap:10px;}
-  .qty-stepper button{width:36px;height:36px;border-radius:10px;background:var(--tile-2);border:1px solid var(--line);color:var(--text);font-size:18px;font-weight:800;}
-  .qty-stepper .n{min-width:34px;text-align:center;font-weight:800;font-size:17px;}
+  .section{padding:20px 22px;}
+  .section-lbl{font-size:11.5px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;font-weight:700;}
 
-  .section-lbl{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);font-weight:700;margin:18px 4px 8px;}
+  .last-row{display:flex;justify-content:space-between;align-items:center;
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;}
+  .last-desc{font-size:14.5px;font-weight:700;}
+  .last-desc .sub{display:block;font-size:11.5px;color:var(--ink-dim);font-weight:400;margin-top:2px;}
+  .qty{display:flex;align-items:center;gap:12px;}
+  .qty button{width:30px;height:30px;border-radius:8px;background:var(--bg);border:1px solid var(--line);
+    color:var(--ink);font-size:16px;font-weight:700;}
+  .qty .n{font-size:16px;font-weight:700;min-width:16px;text-align:center;}
 
-  .field-item{display:flex;justify-content:space-between;align-items:center;padding:14px 4px;border-bottom:1px solid var(--line);}
-  .field-item:last-child{border-bottom:none;}
-  .field-item .name{font-weight:700;font-size:15px;}
-  .field-item .stats{font-size:12px;color:var(--dim);margin-top:2px;}
-  .field-item .active-pill{font-size:10px;background:var(--green-dim);color:var(--green);padding:3px 8px;border-radius:20px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
+  .field-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--line);}
+  .field-row:last-child{border-bottom:none;}
+  .field-name{font-size:14.5px;font-weight:700;}
+  .field-name .pill{display:inline-block;font-size:9.5px;font-weight:700;color:var(--green);background:var(--green-soft);
+    padding:2px 7px;border-radius:20px;margin-left:8px;vertical-align:middle;letter-spacing:.03em;}
+  .field-stats{font-size:13px;color:var(--ink-dim);text-align:right;}
+  .field-stats b{color:var(--ink);font-weight:700;}
+  .empty-hint{font-size:13px;color:var(--ink-dim);}
 
-  details{background:var(--tile);border:1px solid var(--line);border-radius:22px;overflow:hidden;margin-bottom:12px;}
-  summary{padding:16px 16px;font-weight:700;font-size:14px;list-style:none;display:flex;justify-content:space-between;align-items:center;}
+  details{border:none;}
+  summary{list-style:none;cursor:pointer;}
   summary::-webkit-details-marker{display:none;}
-  summary::after{content:'▾';color:var(--dim);}
-  .settings-body{padding:0 16px 16px;border-top:1px solid var(--line);}
-  .setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);gap:10px;}
+  .settings-hdr{display:flex;justify-content:space-between;align-items:center;padding:18px 22px;}
+  .settings-hdr .section-lbl{margin-bottom:0;}
+  .chev{color:var(--ink-dim);font-size:13px;transition:transform .15s;}
+  details[open] .chev{transform:rotate(180deg);}
+  .settings-body{padding:0 22px 20px;}
+  .setting-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--line);gap:10px;}
   .setting-row:last-child{border-bottom:none;}
-  .setting-row .txt{font-size:13px;flex:1;}
-  .setting-row .txt .hint{display:block;font-size:11px;color:var(--dim);margin-top:2px;}
-  .ghost-btn{background:var(--tile-2);border:1px solid var(--line);color:var(--text);padding:10px 14px;border-radius:12px;font-size:13px;font-weight:600;}
-  .link-btn{background:none;color:var(--red);font-size:12px;font-weight:700;padding:4px;}
+  .setting-row .txt{font-size:13.5px;font-weight:700;flex:1;}
+  .setting-row .txt .hint{display:block;font-size:11.5px;color:var(--ink-dim);font-weight:400;margin-top:2px;}
+  .ghost-btn{background:var(--surface);border:1px solid var(--line);color:var(--ink);padding:9px 14px;border-radius:10px;font-size:12.5px;font-weight:700;}
+  .link-btn{color:var(--orange);font-size:12.5px;font-weight:700;}
 
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(2px);z-index:50;
+  .footer{padding:16px 22px 30px;font-size:11px;color:var(--ink-dim);text-align:center;line-height:1.6;}
+
+  /* overlay wizard */
+  .overlay{position:fixed;inset:0;background:rgba(30,35,33,.55);z-index:50;
     display:flex;align-items:center;justify-content:center;padding:20px;}
-  .wizard{position:relative;background:var(--tile);border-radius:26px;padding:22px 18px 26px;width:100%;max-width:480px;
+  .wizard{position:relative;background:var(--surface);border-radius:20px;padding:22px 20px 26px;width:100%;max-width:480px;
     max-height:calc(100vh - 40px);overflow-y:auto;animation:popin .18s ease-out;}
   @keyframes popin{from{transform:scale(.96);opacity:0;}to{transform:scale(1);opacity:1;}}
   .wizard-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;
-    background:var(--tile-2);border:1px solid var(--line);color:var(--dim);font-size:18px;line-height:1;
+    background:var(--bg);border:1px solid var(--line);color:var(--ink-dim);font-size:18px;line-height:1;
     display:flex;align-items:center;justify-content:center;}
-  .wizard-step{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding-right:40px;}
-  .wizard-title{font-size:20px;font-weight:800;margin:6px 0 4px;}
-  .wizard-sub{font-size:13px;color:var(--dim);margin-bottom:18px;}
-  .choice-btn{width:100%;padding:16px;border-radius:16px;background:var(--tile-2);border:1px solid var(--line);
-    color:var(--text);font-size:15px;font-weight:700;margin-bottom:10px;text-align:left;}
-  .choice-btn.primary{background:var(--green);color:#04140a;border-color:var(--green);}
-  .choice-btn .sub{display:block;font-size:12px;font-weight:400;color:var(--dim);margin-top:2px;}
-  .choice-btn.primary .sub{color:#0a2e18;}
-  .wizard-input{width:100%;padding:14px;border-radius:14px;background:var(--tile-2);border:1px solid var(--line);
-    color:var(--text);font-size:15px;margin-bottom:10px;}
-  .wizard-back{background:none;color:var(--dim);font-size:13px;font-weight:600;padding:6px 0;margin-bottom:6px;}
+  .wizard-step{font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding-right:40px;}
+  .wizard-title{font-size:19px;font-weight:700;margin:6px 0 4px;}
+  .wizard-sub{font-size:13px;color:var(--ink-dim);margin-bottom:18px;}
+  .choice-btn{width:100%;padding:16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);
+    color:var(--ink);font-size:15px;font-weight:700;margin-bottom:10px;text-align:left;}
+  .choice-btn.primary{background:var(--green);color:#fff;border-color:var(--green);}
+  .choice-btn .sub{display:block;font-size:12px;font-weight:400;color:var(--ink-dim);margin-top:2px;}
+  .choice-btn.primary .sub{color:rgba(255,255,255,0.8);}
+  .wizard-input{width:100%;padding:14px;border-radius:12px;background:var(--bg);border:1px solid var(--line);
+    color:var(--ink);font-size:15px;margin-bottom:10px;}
+  .wizard-back{background:none;color:var(--ink-dim);font-size:13px;font-weight:700;padding:6px 0;margin-bottom:6px;}
   .field-pick{max-height:220px;overflow-y:auto;margin-bottom:8px;}
-  .field-pick .choice-btn{margin-bottom:8px;}
+  .unit-row{display:flex;gap:8px;margin-bottom:14px;}
+  .unit-row .choice-btn{margin-bottom:0;text-align:center;}
 
-  .footer-note{font-size:11px;color:var(--dim);text-align:center;margin-top:10px;line-height:1.5;}
+  .qty-lg{display:flex;align-items:center;gap:10px;}
+  .qty-lg button{width:36px;height:36px;border-radius:9px;background:var(--bg);border:1px solid var(--line);color:var(--ink);font-size:17px;font-weight:700;}
+  .qty-lg .n{min-width:26px;text-align:center;font-weight:700;font-size:16px;}
 </style>
 </head>
 <body>
 
-  <div class="eyebrow">Bezirk Rohrbach · Feld → Lager</div>
-  <h1>Fuhren-Tracker</h1>
-
-  <div class="tile status-tile">
-    <div class="status-dot off" id="gpsDot"></div>
-    <div style="flex:1;">
-      <div class="status-main" id="zoneLabel">Bereit</div>
-      <div class="status-sub" id="zoneSub">Starten, um eine neue Sitzung zu beginnen</div>
-    </div>
-  </div>
-  <div class="tile status-meta" id="metaTile" style="margin-top:-8px;">
-    <span id="gpsAcc">Genauigkeit: –</span>
-    <span id="gpsCoord">–</span>
+  <div class="header">
+    <div class="brand">Fuhren-Tracker</div>
+    <div class="brand-sub">Bezirk Rohrbach · Feld → Lager</div>
   </div>
 
-  <button class="start-btn" id="startBtn">▶ Tracking starten</button>
-
-  <div class="tile-row">
-    <div class="tile count-tile fuhren">
-      <div class="lbl">Fuhren</div>
-      <div class="num" id="fuhrenVal">0</div>
-      <div class="unit" id="feldNameTag">Ohne Feld</div>
-    </div>
-    <div class="tile count-tile objekte">
-      <div class="lbl">Menge</div>
-      <div class="num" id="objekteVal">0</div>
-      <div class="unit" id="einheitTag">Stück</div>
-    </div>
+  <div class="status off" id="statusBox">
+    <span class="status-dot" id="statusDot"></span>
+    <span class="status-text" id="zoneLabel">Bereit</span>
+    <span class="status-sub" id="gpsAcc"></span>
   </div>
 
-  <div class="tile last-entry" id="lastEntryTile" style="display:none;">
-    <div class="info">
-      <div class="tag">Letzte Fuhre</div>
-      <div class="desc" id="lastEntryDesc">–</div>
-    </div>
-    <div class="qty-stepper">
-      <button id="lastMinus">−</button>
-      <span class="n" id="lastQtyVal">0</span>
-      <button id="lastPlus">+</button>
-    </div>
+  <div class="hero">
+    <div class="hero-label">Fuhren</div>
+    <div class="hero-num" id="fuhrenVal">0</div>
+    <div class="hero-field" id="feldNameTag">Ohne Feld</div>
+    <div class="hero-sum" id="heroSum">Noch keine Fuhren erfasst</div>
   </div>
 
-  <div class="section-lbl">Felder-Übersicht</div>
-  <div class="tile" id="fieldOverviewTile">
+  <div class="btn-row">
+    <button class="btn" id="startBtn">Tracking starten</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section" id="lastEntrySection" style="display:none;">
+    <div class="section-lbl">Letzte Fuhre</div>
+    <div class="last-row">
+      <div class="last-desc"><span id="lastEntryDesc">–</span><span class="sub" id="lastEntrySub"></span></div>
+      <div class="qty">
+        <button id="lastMinus">–</button>
+        <span class="n" id="lastQtyVal">0</span>
+        <button id="lastPlus">+</button>
+      </div>
+    </div>
+  </div>
+  <div class="divider" id="lastEntryDivider" style="display:none;"></div>
+
+  <div class="section">
+    <div class="section-lbl">Felder</div>
     <div id="fieldOverviewList"></div>
   </div>
 
+  <div class="divider"></div>
+
   <details>
-    <summary>Einstellungen</summary>
+    <summary>
+      <div class="settings-hdr">
+        <div class="section-lbl">Einstellungen</div>
+        <div class="chev">▾</div>
+      </div>
+    </summary>
     <div class="settings-body">
       <div class="setting-row">
-        <div class="txt">Aktuelles Feld
-          <span class="hint" id="currentFieldHint">Ohne Feld</span>
-        </div>
+        <div class="txt">Aktuelles Feld<span class="hint" id="currentFieldHint">Ohne Feld</span></div>
         <button class="ghost-btn" id="switchFieldBtn">Wechseln</button>
       </div>
       <div class="setting-row">
-        <div class="txt">Standard-Menge pro Fuhre
-          <span class="hint">Gilt für neu erkannte Fuhren</span>
-        </div>
-        <div class="qty-stepper">
-          <button id="defMinus">−</button>
+        <div class="txt">Standard-Menge pro Fuhre<span class="hint">Gilt für neu erkannte Fuhren</span></div>
+        <div class="qty-lg">
+          <button id="defMinus">–</button>
           <span class="n" id="defMengeVal">1</span>
           <button id="defPlus">+</button>
         </div>
       </div>
       <div class="setting-row">
-        <div class="txt">Einheit
-          <span class="hint" id="unitHint">Stück</span>
-        </div>
+        <div class="txt">Einheit<span class="hint" id="unitHint">Stück</span></div>
         <button class="ghost-btn" id="changeUnitBtn">Ändern</button>
       </div>
       <div class="setting-row">
-        <div class="txt">Lagerplatz
-          <div class="hint" id="lagerStatus">Noch nicht erkannt</div>
-        </div>
+        <div class="txt">Lagerplatz<span class="hint" id="lagerStatus">Noch nicht erkannt</span></div>
         <button class="ghost-btn" id="resetLagerBtn">Zurücksetzen</button>
       </div>
       <div class="setting-row">
         <div class="txt">Letzte Fuhre löschen</div>
-        <button class="ghost-btn link-btn" id="undoLastBtn">Löschen</button>
+        <button class="link-btn" id="undoLastBtn">Löschen</button>
       </div>
     </div>
   </details>
 
-  <div class="footer-note">Fuhren werden lokal auf diesem Gerät gespeichert.<br>Bildschirm während der Fahrt an lassen, sonst pausiert das GPS.</div>
+  <div class="footer">Fuhren werden lokal auf diesem Gerät gespeichert.<br>Bildschirm während der Fahrt an lassen, sonst pausiert das GPS.</div>
 
   <div class="overlay" id="wizardOverlay" style="display:none;">
     <div class="wizard" id="wizardBody"></div>
@@ -229,7 +235,7 @@
   let aktuellesFeldId = null;
   let watchId = null;
   let posBuffer = [];
-  let stopped = false;          // true = aktuell in einem erkannten Halt (Fix: verhindert Mehrfach-Registrierung durch GPS-Drift)
+  let stopped = false;          // true = aktuell in einem erkannten Halt (verhindert Mehrfach-Registrierung durch GPS-Drift)
   let currentStopCentroid = null;
   let lastZone = null;
   let distanceSinceLeftLager = 0;
@@ -248,15 +254,10 @@
     return 2*R*Math.asin(Math.sqrt(s));
   }
 
-  function save(){
-    try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
-    catch(e){ console.error('Speichern fehlgeschlagen', e); }
-  }
+  function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){ console.error(e); } }
   function load(){
-    try{
-      const raw = localStorage.getItem(STORE_KEY);
-      if(raw) state = Object.assign(state, JSON.parse(raw));
-    }catch(e){}
+    try{ const raw = localStorage.getItem(STORE_KEY); if(raw) state = Object.assign(state, JSON.parse(raw)); }
+    catch(e){}
     render();
   }
 
@@ -271,50 +272,50 @@
   }
 
   function render(){
-    el('fuhrenVal').textContent = fuhrenForFeld(aktuellesFeldId);
-    el('objekteVal').textContent = mengeForFeld(aktuellesFeldId);
+    const n = fuhrenForFeld(aktuellesFeldId);
+    const m = mengeForFeld(aktuellesFeldId);
+    el('fuhrenVal').textContent = n;
     el('feldNameTag').textContent = feldName(aktuellesFeldId);
-    el('einheitTag').textContent = state.einheit;
+    el('heroSum').textContent = n>0 ? `${m} ${state.einheit} gesamt · Ø ${(m/n).toFixed(1)} pro Fuhre` : 'Noch keine Fuhren erfasst';
     el('defMengeVal').textContent = state.mengeProFuhre;
     el('currentFieldHint').textContent = feldName(aktuellesFeldId);
     el('unitHint').textContent = state.einheit;
-
-    if(state.lagerplatz){
-      el('lagerStatus').textContent = `Erkannt (${state.lagerplatz.lat.toFixed(4)}, ${state.lagerplatz.lon.toFixed(4)})`;
-    } else {
-      el('lagerStatus').textContent = 'Noch nicht erkannt';
-    }
+    el('lagerStatus').textContent = state.lagerplatz
+      ? `Erkannt (${state.lagerplatz.lat.toFixed(4)}, ${state.lagerplatz.lon.toFixed(4)})`
+      : 'Noch nicht erkannt';
 
     if(state.log.length > 0){
       const last = state.log[state.log.length-1];
-      el('lastEntryTile').style.display = 'flex';
-      el('lastEntryDesc').textContent = `${feldName(last.feldId)} · #${state.log.filter(e=>(e.feldId||null)===(last.feldId||null)).length}`;
+      el('lastEntrySection').style.display = 'block';
+      el('lastEntryDivider').style.display = 'block';
+      const cnt = state.log.filter(e=>(e.feldId||null)===(last.feldId||null)).length;
+      el('lastEntryDesc').textContent = `${feldName(last.feldId)} #${cnt}`;
+      const mins = Math.max(0, Math.round((Date.now()-last.ts)/60000));
+      el('lastEntrySub').textContent = mins < 1 ? 'Gerade eben' : `Vor ${mins} Min.`;
       el('lastQtyVal').textContent = last.menge;
     } else {
-      el('lastEntryTile').style.display = 'none';
+      el('lastEntrySection').style.display = 'none';
+      el('lastEntryDivider').style.display = 'none';
     }
 
     const list = el('fieldOverviewList');
     const buckets = [null, ...state.felder.map(f=>f.id)];
     const rows = buckets.map(fid=>{
-      const n = fuhrenForFeld(fid);
-      const m = mengeForFeld(fid);
-      if(fid===null && n===0 && state.felder.length>0) return '';
+      const fn = fuhrenForFeld(fid), fm = mengeForFeld(fid);
+      if(fid===null && fn===0 && state.felder.length>0) return '';
       const active = fid === aktuellesFeldId;
-      return `<div class="field-item">
-        <div>
-          <div class="name">${feldName(fid)}</div>
-          <div class="stats">${n} Fuhren · ${m} ${state.einheit}</div>
-        </div>
-        ${active ? '<span class="active-pill">Aktiv</span>' : ''}
+      return `<div class="field-row">
+        <div class="field-name">${feldName(fid)}${active ? '<span class="pill">Aktiv</span>' : ''}</div>
+        <div class="field-stats"><b>${fn}</b> Fuhren · ${fm} ${state.einheit}</div>
       </div>`;
     }).join('');
-    list.innerHTML = rows || '<div style="color:var(--dim);font-size:13px;padding:6px 4px;">Noch keine Daten.</div>';
+    list.innerHTML = rows || '<div class="empty-hint">Noch keine Daten.</div>';
   }
 
-  function setZoneLabel(text, sub){
+  function setZoneLabel(text, sub, mode){
     el('zoneLabel').textContent = text;
-    el('zoneSub').textContent = sub;
+    el('gpsAcc').textContent = sub || '';
+    el('statusBox').className = 'status ' + (mode||'');
   }
 
   function findCluster(pos){
@@ -336,7 +337,6 @@
       const best = state.clusters.reduce((a,b)=> b.count > a.count ? b : a, state.clusters[0]);
       if(best.count >= AUTO_LAGER_COUNT) state.lagerplatz = {lat: best.lat, lon: best.lon};
     }
-
     const isLager = state.lagerplatz && haversine(state.lagerplatz, centroid) <= CLUSTER_RADIUS_M;
     if(isLager){
       if(lastZone === 'feld' && distanceSinceLeftLager >= MIN_TRIP_DISTANCE_M){
@@ -352,18 +352,17 @@
   }
 
   function flashCounted(){
-    setZoneLabel('Fuhre gezählt ✓', 'Am Lagerplatz angekommen');
+    setZoneLabel('Fuhre gezählt ✓', 'Am Lagerplatz', 'live');
     setTimeout(()=>{ if(currentStopCentroid) updateZoneDisplay(currentStopCentroid); }, 2200);
   }
   function updateZoneDisplay(centroid){
     const isLager = state.lagerplatz && haversine(state.lagerplatz, centroid) <= CLUSTER_RADIUS_M;
-    setZoneLabel(isLager ? 'Am Lagerplatz' : 'Halt im Feld', 'Fahrzeug steht');
+    setZoneLabel(isLager ? 'Am Lagerplatz' : 'Halt im Feld', 'Fahrzeug steht', 'live');
   }
 
   function onPosition(p){
     const pos = {lat:p.coords.latitude, lon:p.coords.longitude, t:Date.now()};
-    el('gpsAcc').textContent = `Genauigkeit: ±${Math.round(p.coords.accuracy)} m`;
-    el('gpsCoord').textContent = `${pos.lat.toFixed(5)}, ${pos.lon.toFixed(5)}`;
+    const accTxt = `± ${Math.round(p.coords.accuracy)} m`;
 
     if(lastMovingPos){
       const d = haversine(lastMovingPos, pos);
@@ -373,7 +372,7 @@
 
     posBuffer.push(pos);
     posBuffer = posBuffer.filter(q => pos.t - q.t <= MIN_STOP_TIME_MS + 5000);
-    if(posBuffer.length < 2) return;
+    if(posBuffer.length < 2){ el('gpsAcc').textContent = accTxt; return; }
 
     let maxSpread = 0;
     for(let i=0;i<posBuffer.length;i++) for(let j=i+1;j<posBuffer.length;j++)
@@ -398,14 +397,14 @@
     } else {
       stopped = false;
       currentStopCentroid = null;
-      setZoneLabel('In Fahrt', lastZone === 'lager' ? 'unterwegs vom Lager' : 'unterwegs am Feld');
+      setZoneLabel('In Fahrt', lastZone === 'lager' ? 'vom Lager weg' : 'am Feld unterwegs', 'live');
     }
+    el('gpsAcc').textContent = accTxt;
   }
   function onError(err){
     const isFatal = err.code === err.PERMISSION_DENIED || err.code === err.POSITION_UNAVAILABLE;
     if(isFatal) stopTrackingCleanup(); // Watch ist nutzlos - UI/Button sonst dauerhaft in "Tracking stoppen" haengen geblieben
-    setZoneLabel('GPS-Fehler', err.message || 'Standort nicht verfügbar');
-    el('gpsDot').className = 'status-dot off';
+    setZoneLabel('GPS-Fehler', err.message || 'Standort nicht verfügbar', 'err');
   }
 
   async function acquireWakeLock(){
@@ -418,16 +417,13 @@
   function releaseWakeLock(){
     if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock = null; }
   }
-  // Der Wake Lock wird vom Browser automatisch aufgehoben, sobald die Seite in den
-  // Hintergrund geht (App-Wechsel etc.) - beim Zurueckkehren waehrend laufendem Tracking neu anfordern.
   document.addEventListener('visibilitychange', ()=>{
     if(document.visibilityState === 'visible' && tracking) acquireWakeLock();
   });
 
   function beginGpsWatch(){
-    if(!navigator.geolocation){ setZoneLabel('Nicht unterstützt', 'Kein GPS im Browser verfügbar'); return; }
+    if(!navigator.geolocation){ setZoneLabel('Nicht unterstützt', 'Kein GPS im Browser', 'err'); return; }
     watchId = navigator.geolocation.watchPosition(onPosition, onError, {enableHighAccuracy:true, maximumAge:2000, timeout:15000});
-    el('gpsDot').className = 'status-dot live';
     acquireWakeLock();
   }
   function stopTrackingCleanup(){
@@ -435,13 +431,12 @@
     watchId = null; tracking = false;
     posBuffer = []; stopped = false; currentStopCentroid = null;
     releaseWakeLock();
-    el('gpsDot').className = 'status-dot off';
-    el('startBtn').innerHTML = '▶ Tracking starten';
+    el('startBtn').textContent = 'Tracking starten';
     el('startBtn').classList.remove('stop');
   }
   function stopTracking(){
     stopTrackingCleanup();
-    setZoneLabel('Gestoppt', 'Starten, um eine neue Sitzung zu beginnen');
+    setZoneLabel('Bereit', '', 'off');
   }
 
   function showWizard(html){
@@ -470,7 +465,7 @@
       <button class="wizard-back" id="wzBack">‹ Zurück</button>
       <div class="wizard-step">Schritt 1 von 3</div>
       <div class="wizard-title">Welches Feld?</div>
-      <div class="field-pick">${existing || '<div style="color:var(--dim);font-size:13px;">Noch keine Felder angelegt.</div>'}</div>
+      <div class="field-pick">${existing || '<div style="color:var(--ink-dim);font-size:13px;">Noch keine Felder angelegt.</div>'}</div>
       <input class="wizard-input" id="wzNewFeldName" placeholder="Name für neues Feld, z. B. Nordacker">
       <button class="choice-btn primary" id="wzCreateFeld">+ Neues Feld anlegen</button>
     `);
@@ -513,15 +508,15 @@
       <div class="wizard-step">Schritt 3 von 3</div>
       <div class="wizard-title">Wie soll gezählt werden?</div>
       <div class="wizard-sub">Einheit und Menge pro Fuhre festlegen.</div>
-      <div style="display:flex;gap:8px;margin-bottom:14px;">
-        <button class="choice-btn wz-unit-btn ${wizard.einheit==='Stück'?'primary':''}" data-u="Stück" style="margin-bottom:0;">Stück</button>
-        <button class="choice-btn wz-unit-btn ${wizard.einheit==='m³'?'primary':''}" data-u="m³" style="margin-bottom:0;">m³</button>
+      <div class="unit-row">
+        <button class="choice-btn wz-unit-btn ${wizard.einheit==='Stück'?'primary':''}" data-u="Stück">Stück</button>
+        <button class="choice-btn wz-unit-btn ${wizard.einheit==='m³'?'primary':''}" data-u="m³">m³</button>
       </div>
       <input class="wizard-input" id="wzCustomUnit" placeholder="Andere Einheit (optional, z. B. Tonnen)" value="${(wizard.einheit!=='Stück'&&wizard.einheit!=='m³')?wizard.einheit:''}">
-      <div class="setting-row" style="border:none;padding:6px 2px 18px;">
-        <div class="txt">Menge pro Fuhre</div>
-        <div class="qty-stepper">
-          <button id="wzMengeMinus">−</button>
+      <div class="setting-row" style="border:none;padding:6px 0 18px;">
+        <div class="txt" style="font-weight:400;">Menge pro Fuhre</div>
+        <div class="qty-lg">
+          <button id="wzMengeMinus">–</button>
           <span class="n" id="wzMengeVal">${wizard.menge}</span>
           <button id="wzMengePlus">+</button>
         </div>
@@ -535,9 +530,9 @@
     el('wzMengeMinus').onclick = ()=>{ if(wizard.menge>1){ wizard.menge--; el('wzMengeVal').textContent = wizard.menge; } };
     el('wzMengePlus').onclick = ()=>{ wizard.menge++; el('wzMengeVal').textContent = wizard.menge; };
 
-    // Fix: Bindung haengt vom Aufruf-Kontext ab (voller Onboarding-Wizard vs. "Einheit aendern"
-    // aus den Einstellungen), damit ein erneutes Rendern (z.B. durch Klick auf Stueck/m3) die
-    // jeweils richtigen Finish-/Zurueck-Handler nicht durch die des jeweils anderen Kontexts ersetzt.
+    // Bindung haengt vom Aufruf-Kontext ab (voller Onboarding-Wizard vs. "Einheit aendern" aus den
+    // Einstellungen), damit ein erneutes Rendern (z.B. durch Klick auf Stueck/m3) die jeweils
+    // richtigen Finish-/Zurueck-Handler nicht durch die des jeweils anderen Kontexts ersetzt.
     if(wizard.mode === 'editUnit'){
       el('wzBack').onclick = hideWizard;
       el('wzFinish').textContent = 'Speichern';
@@ -566,9 +561,9 @@
     save();
     hideWizard();
     tracking = true;
-    el('startBtn').innerHTML = '■ Tracking stoppen';
+    el('startBtn').textContent = 'Tracking stoppen';
     el('startBtn').classList.add('stop');
-    setZoneLabel('Suche Standort…', 'GPS wird initialisiert');
+    setZoneLabel('Suche Standort…', 'GPS wird initialisiert', 'live');
     beginGpsWatch();
     render();
   }
@@ -629,11 +624,9 @@
   if('serviceWorker' in navigator){
     window.addEventListener('load', ()=>{
       navigator.serviceWorker.register('sw.js').then((reg) => {
-        reg.update(); // sofort auf eine neuere Version pruefen statt auf den Browser-Standardintervall zu warten
+        reg.update();
       }).catch(e => console.error('Service Worker Registrierung fehlgeschlagen', e));
     });
-    // Sobald eine neue Version die Kontrolle uebernimmt, einmalig neu laden, damit Nutzer nicht auf
-    // einem veralteten, bereits gecachten Stand haengen bleiben (siehe Cache-Strategie in sw.js).
     let refreshedOnce = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if(refreshedOnce) return;

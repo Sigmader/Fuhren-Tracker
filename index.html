@@ -237,7 +237,6 @@
   let posBuffer = [];
   let stopped = false;          // true = aktuell in einem erkannten Halt (verhindert Mehrfach-Registrierung durch GPS-Drift)
   let currentStopCentroid = null;
-  let lastZone = null;
   let distanceSinceLeftLager = 0;
   let lastMovingPos = null;
   let tracking = false;
@@ -323,6 +322,8 @@
     return null;
   }
 
+  // Stops werden nur noch verwendet, um den Lagerplatz automatisch zu erkennen
+  // (Zählung der Fuhren läuft unabhängig davon über checkZoneTransition, siehe unten)
   function registerStop(centroid){
     let cluster = findCluster(centroid);
     if(cluster){
@@ -337,18 +338,26 @@
       const best = state.clusters.reduce((a,b)=> b.count > a.count ? b : a, state.clusters[0]);
       if(best.count >= AUTO_LAGER_COUNT) state.lagerplatz = {lat: best.lat, lon: best.lon};
     }
-    const isLager = state.lagerplatz && haversine(state.lagerplatz, centroid) <= CLUSTER_RADIUS_M;
-    if(isLager){
-      if(lastZone === 'feld' && distanceSinceLeftLager >= MIN_TRIP_DISTANCE_M){
+    save(); render();
+  }
+
+  // Zählt eine Fuhre, sobald die Position in die Lagerplatz-Zone eintritt —
+  // unabhängig davon, ob dabei angehalten wird (wichtig z.B. beim Entladen in Fahrt).
+  let inLagerZone = false;
+  function checkZoneTransition(pos){
+    if(!state.lagerplatz) return;
+    const isLager = haversine(state.lagerplatz, pos) <= CLUSTER_RADIUS_M;
+    if(isLager && !inLagerZone){
+      if(distanceSinceLeftLager >= MIN_TRIP_DISTANCE_M){
         state.log.push({id:uid(), ts:Date.now(), feldId:aktuellesFeldId, menge:state.mengeProFuhre, einheit:state.einheit});
         flashCounted();
       }
-      lastZone = 'lager';
+      inLagerZone = true;
       distanceSinceLeftLager = 0;
-    } else {
-      lastZone = 'feld';
+      save(); render();
+    } else if(!isLager){
+      inLagerZone = false;
     }
-    save(); render();
   }
 
   function flashCounted(){
@@ -366,9 +375,10 @@
 
     if(lastMovingPos){
       const d = haversine(lastMovingPos, pos);
-      if(lastZone !== 'lager') distanceSinceLeftLager += d;
+      if(!inLagerZone) distanceSinceLeftLager += d;
     }
     lastMovingPos = pos;
+    checkZoneTransition(pos);
 
     posBuffer.push(pos);
     posBuffer = posBuffer.filter(q => pos.t - q.t <= MIN_STOP_TIME_MS + 5000);
@@ -397,7 +407,7 @@
     } else {
       stopped = false;
       currentStopCentroid = null;
-      setZoneLabel('In Fahrt', lastZone === 'lager' ? 'vom Lager weg' : 'am Feld unterwegs', 'live');
+      setZoneLabel('In Fahrt', inLagerZone ? 'am Lagerplatz' : 'am Feld unterwegs', 'live');
     }
     el('gpsAcc').textContent = accTxt;
   }
@@ -556,7 +566,7 @@
     aktuellesFeldId = wizard.feldId;
     state.einheit = wizard.einheit || 'Stück';
     state.mengeProFuhre = wizard.menge || 1;
-    lastZone = wizard.startZone === 'lager' ? 'lager' : 'feld';
+    inLagerZone = wizard.startZone === 'lager';
     distanceSinceLeftLager = 0;
     save();
     hideWizard();

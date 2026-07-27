@@ -236,6 +236,7 @@
   let lastMovingPos = null;
   let tracking = false;
   let wizard = {};
+  let wakeLock = null;
 
   function uid(){ return Math.random().toString(36).slice(2,9); }
 
@@ -407,15 +408,33 @@
     el('gpsDot').className = 'status-dot off';
   }
 
+  async function acquireWakeLock(){
+    if(!('wakeLock' in navigator)) return; // z.B. aeltere iOS-Versionen - Tracking laeuft trotzdem weiter, nur der Displayschutz fehlt
+    try{
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', ()=>{ wakeLock = null; });
+    }catch(e){ /* z.B. Akkusparmodus - kein Blocker fuers Tracking selbst */ }
+  }
+  function releaseWakeLock(){
+    if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock = null; }
+  }
+  // Der Wake Lock wird vom Browser automatisch aufgehoben, sobald die Seite in den
+  // Hintergrund geht (App-Wechsel etc.) - beim Zurueckkehren waehrend laufendem Tracking neu anfordern.
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'visible' && tracking) acquireWakeLock();
+  });
+
   function beginGpsWatch(){
     if(!navigator.geolocation){ setZoneLabel('Nicht unterstützt', 'Kein GPS im Browser verfügbar'); return; }
     watchId = navigator.geolocation.watchPosition(onPosition, onError, {enableHighAccuracy:true, maximumAge:2000, timeout:15000});
     el('gpsDot').className = 'status-dot live';
+    acquireWakeLock();
   }
   function stopTrackingCleanup(){
     if(watchId !== null) navigator.geolocation.clearWatch(watchId);
     watchId = null; tracking = false;
     posBuffer = []; stopped = false; currentStopCentroid = null;
+    releaseWakeLock();
     el('gpsDot').className = 'status-dot off';
     el('startBtn').innerHTML = '▶ Tracking starten';
     el('startBtn').classList.remove('stop');
